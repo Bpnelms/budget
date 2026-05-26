@@ -95,14 +95,42 @@
         const SUPABASE_URL = 'https://rqojihfryxicnojxiphc.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxb2ppaGZyeXhpY25vanhpcGhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzY1NTAsImV4cCI6MjA5NTIxMjU1MH0.WLFTJ7ZzaZTkSlYzvsDr6mGA5IjZMxwSUfXfVOvZW6A';
         
-        let supabase;
-        try {
-            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } catch(e) {
-            alert("Supabase Library failed to initialize: " + e.message);
+        let clientSupabase = null;
+        let encryptionKey = null;
+        let currentPin = "";
+
+        // Safe Initialization Engine
+        function initSupabase() {
+            try {
+                if (typeof supabase !== 'undefined' && supabase.createClient) {
+                    clientSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                } else if (window.supabase && window.supabase.createClient) {
+                    clientSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                } else {
+                    alert("Supabase library loading delayed. Trying again...");
+                }
+            } catch(e) {
+                alert("Initialization crash: " + e.message);
+            }
+        }
+
+        // Run setup as soon as page finishes loading
+        window.onload = function() {
+            initSupabase();
+        };
+
+        // --- PIN PAD UTILITIES ---
+        function pressPin(num) { 
+            if(currentPin.length < 6) { 
+                currentPin += num; 
+                document.getElementById('pinInput').value = "*".repeat(currentPin.length); 
+            } 
         }
         
-        let encryptionKey = null;
+        function clearPin() { 
+            currentPin = ""; 
+            document.getElementById('pinInput').value = ""; 
+        }
 
         // --- ENCRYPTION IMPLEMENTATION (AES-GCM) ---
         async function deriveKeyFromPin(pin) {
@@ -134,30 +162,19 @@
                 return new TextDecoder().decode(decrypted);
             } catch (e) { return "[Decryption Error]"; }
         }
-
-        // --- APPLICATION LOGIC ---
-        let currentPin = "";
-        function pressPin(num) { 
-            if(currentPin.length < 6) { 
-                currentPin += num; 
-                document.getElementById('pinInput').value = "*".repeat(currentPin.length); 
-            } 
-        }
-        function clearPin() { 
-            currentPin = ""; 
-            document.getElementById('pinInput').value = ""; 
-        }
         
         async function submitPin() {
             try {
+                if(!clientSupabase) initSupabase();
+                if(!clientSupabase) return alert("Database client library connection offline. Reloading recommended.");
                 if(currentPin.length < 4) return alert("PIN must be 4-6 digits");
-                document.getElementById('syncStatus').innerText = "Unlocking...";
                 
+                document.getElementById('syncStatus').innerText = "Unlocking...";
                 encryptionKey = await deriveKeyFromPin(currentPin);
                 document.getElementById('lockScreen').classList.add('hidden');
                 
                 // Test database connectivity and look for records
-                const { data: envs, error } = await supabase.from('envelopes').select('id').limit(1);
+                const { data: envs, error } = await clientSupabase.from('envelopes').select('id').limit(1);
                 
                 if (error) {
                     alert("Database Connection Error: " + error.message);
@@ -189,7 +206,7 @@
             const encPayee = await encryptData("Starting Balance Import", encryptionKey);
             const encAmount = await encryptData(checkingVal.toFixed(2), encryptionKey);
             const encType = await encryptData("credit", encryptionKey);
-            await supabase.from('checking_register').insert([{ date: encDate, payee: encPayee, amount: encAmount, type: encType }]);
+            await clientSupabase.from('checking_register').insert([{ date: encDate, payee: encPayee, amount: encAmount, type: encType }]);
 
             // 2. Parse and loop through pasted lines from Google Sheets
             const lines = rawPaste.trim().split('\n');
@@ -201,7 +218,7 @@
                     const encBudget = await encryptData(parseFloat(cols[2]).toFixed(2), encryptionKey);
                     const encCurrent = await encryptData(parseFloat(cols[3]).toFixed(2), encryptionKey);
 
-                    await supabase.from('envelopes').insert([{
+                    await clientSupabase.from('envelopes').insert([{
                         category: encCat, name: encName, monthly_budget: encBudget, current_amount: encCurrent
                     }]);
                 }
@@ -212,8 +229,8 @@
         }
 
         async function loadDashboard() {
-            const { data: txs } = await supabase.from('checking_register').select('*');
-            const { data: envs } = await supabase.from('envelopes').select('*');
+            const { data: txs } = await clientSupabase.from('checking_register').select('*');
+            const { data: envs } = await clientSupabase.from('envelopes').select('*');
 
             let totalChecking = 0;
             let totalEnvelopes = 0;
