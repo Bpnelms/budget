@@ -163,35 +163,28 @@
             } catch (e) { return "[Decryption Error]"; }
         }
         
-        async function submitPin() {
-            try {
-                if(!clientSupabase) initSupabase();
-                if(!clientSupabase) return alert("Database client library connection offline. Reloading recommended.");
-                if(currentPin.length < 4) return alert("PIN must be 4-6 digits");
-                
-                document.getElementById('syncStatus').innerText = "Unlocking...";
-                encryptionKey = await deriveKeyFromPin(currentPin);
-                document.getElementById('lockScreen').classList.add('hidden');
-                
-                // Test database connectivity and look for records
-                const { data: envs, error } = await clientSupabase.from('envelopes').select('id').limit(1);
-                
-                if (error) {
-                    alert("Database Connection Error: " + error.message);
-                    document.getElementById('lockScreen').classList.remove('hidden');
-                    return;
-                }
-                
-                if (envs && envs.length === 0) {
-                    document.getElementById('onboardingScreen').classList.remove('hidden');
-                } else {
-                    document.getElementById('app').classList.remove('hidden');
-                    await loadDashboard();
-                }
-            } catch (err) {
-                alert("App Critical Failure at Initialization: " + err.message);
-            }
-        }
+       async function submitPin() {
+    try {
+        if(!clientSupabase) initSupabase();
+        if(!clientSupabase) return alert("Database client library connection offline. Reloading recommended.");
+        if(currentPin.length < 4) return alert("PIN must be 4-6 digits");
+        
+        document.getElementById('syncStatus').innerText = "Unlocking...";
+        encryptionKey = await deriveKeyFromPin(currentPin);
+        
+        // --- THE MASTER BYPASS ---
+        // We completely skip the empty check and force the gates open
+        document.getElementById('lockScreen').classList.add('hidden');
+        document.getElementById('onboardingScreen').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        
+        // Instantly trigger data download
+        await loadDashboard();
+        
+    } catch (err) {
+        alert("App Critical Failure at Initialization: " + err.message);
+    }
+}
 
         // --- BULK DATA ONBOARDING LOOPER ---
         async function processOnboarding() {
