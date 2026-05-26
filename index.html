@@ -11,11 +11,11 @@
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans antialiased pb-24">
 
-    <div id="app" class="max-w-md mx-auto p-4 space-y-6">
+    <div id="app" class="max-w-md mx-auto p-4 space-y-6 hidden">
         <header class="bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-700">
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-xl font-bold tracking-tight">🔒 Secure Ledger</h1>
-                <span id="syncStatus" class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full font-mono">Ready</span>
+                <span id="syncStatus" class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full font-mono">Synced</span>
             </div>
             <div class="space-y-3">
                 <div>
@@ -35,21 +35,41 @@
         <nav class="grid grid-cols-3 gap-2">
             <button onclick="switchView('register')" class="nav-btn bg-emerald-600 text-white font-medium py-3 rounded-xl shadow-md text-sm">📝 Register</button>
             <button onclick="switchView('envelopes')" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm">📁 Envelopes</button>
-            <button onclick="alert('Transaction Panel coming up!')" class="bg-indigo-600 text-white font-medium py-3 rounded-xl shadow-md text-sm font-bold">+ Transaction</button>
+            <button onclick="alert('Transaction splitting panel coming next!')" class="bg-indigo-600 text-white font-medium py-3 rounded-xl shadow-md text-sm font-bold">+ Transaction</button>
         </nav>
 
         <section id="registerView" class="space-y-3">
             <h2 class="text-lg font-semibold px-1">Recent Transactions</h2>
-            <div id="transactionList" class="space-y-2"><p class="text-sm text-gray-500 text-center py-4">Enter PIN to view register.</p></div>
+            <div id="transactionList" class="space-y-2"></div>
         </section>
 
         <section id="envelopesView" class="space-y-4 hidden">
             <div class="flex justify-between items-center px-1">
                 <h2 class="text-lg font-semibold">Your Envelopes</h2>
-                <button onclick="alert('Transfer Tool coming up!')" class="text-xs bg-gray-700 text-indigo-300 px-3 py-1.5 rounded-lg border border-gray-600">⇄ Move Money</button>
+                <button onclick="alert('Transfer Tool coming next!')" class="text-xs bg-gray-700 text-indigo-300 px-3 py-1.5 rounded-lg border border-gray-600">⇄ Move Money</button>
             </div>
             <div id="envelopeList" class="grid grid-cols-1 gap-2"></div>
         </section>
+    </div>
+
+    <div id="onboardingScreen" class="max-w-md mx-auto p-6 space-y-6 hidden">
+        <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 space-y-4">
+            <h2 class="text-xl font-bold text-indigo-400">📥 Initial Setup & Data Import</h2>
+            <p class="text-xs text-gray-400">Paste your envelope columns directly from Google Sheets. Your phone will encrypt them line-by-line before uploading.</p>
+            
+            <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase mb-1">Starting Checking Balance</label>
+                <input type="number" id="initChecking" step="0.01" placeholder="1432.50" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white font-mono">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase mb-1">Paste Envelopes from Sheet</label>
+                <p class="text-[10px] text-gray-500 mb-1">Format columns: Category | Envelope Name | Budget | Current Amount</p>
+                <textarea id="envelopePaste" rows="6" placeholder="Auto&#9;Maintenance&#9;100&#9;450&#10;Food&#9;Groceries&#9;400&#9;120" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-xs font-mono text-white"></textarea>
+            </div>
+
+            <button onclick="processOnboarding()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg active:bg-indigo-500 transition">🔒 Encrypt & Push to Cloud</button>
+        </div>
     </div>
 
     <div id="lockScreen" class="fixed inset-0 bg-gray-950 flex flex-col justify-center items-center z-50 p-6">
@@ -60,12 +80,12 @@
             <div class="grid grid-cols-3 gap-3">
                 <script>
                     for(let i=1; i<=9; i++) {
-                        document.write(`<button onclick="pressPin('${i}')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700">${i}</button>`);
+                        document.write(`<button onclick="pressPin('${i}')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">${i}</button>`);
                     }
                 </script>
-                <button onclick="clearPin()" class="bg-red-950 text-red-400 text-sm font-bold py-4 rounded-xl border border-red-900">CLEAR</button>
-                <button onclick="pressPin('0')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700">0</button>
-                <button onclick="submitPin()" class="bg-emerald-600 text-white text-sm font-bold py-4 rounded-xl shadow-lg">ENTER</button>
+                <button onclick="clearPin()" class="bg-red-950 text-red-400 text-sm font-bold py-4 rounded-xl border border-red-900 active:bg-red-900 select-none">CLEAR</button>
+                <button onclick="pressPin('0')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">0</button>
+                <button onclick="submitPin()" class="bg-emerald-600 text-white text-sm font-bold py-4 rounded-xl shadow-lg active:bg-emerald-500 select-none">ENTER</button>
             </div>
         </div>
     </div>
@@ -74,7 +94,14 @@
         // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://rqojihfryxicnojxiphc.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxb2ppaGZyeXhpY25vanhpcGhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzY1NTAsImV4cCI6MjA5NTIxMjU1MH0.WLFTJ7ZzaZTkSlYzvsDr6mGA5IjZMxwSUfXfVOvZW6A';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let supabase;
+        try {
+            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch(e) {
+            alert("Supabase Library failed to initialize: " + e.message);
+        }
+        
         let encryptionKey = null;
 
         // --- ENCRYPTION IMPLEMENTATION (AES-GCM) ---
@@ -110,16 +137,122 @@
 
         // --- APPLICATION LOGIC ---
         let currentPin = "";
-        function pressPin(num) { if(currentPin.length < 6) { currentPin += num; document.getElementById('pinInput').value = "*".repeat(currentPin.length); } }
-        function clearPin() { currentPin = ""; document.getElementById('pinInput').value = ""; }
+        function pressPin(num) { 
+            if(currentPin.length < 6) { 
+                currentPin += num; 
+                document.getElementById('pinInput').value = "*".repeat(currentPin.length); 
+            } 
+        }
+        function clearPin() { 
+            currentPin = ""; 
+            document.getElementById('pinInput').value = ""; 
+        }
         
         async function submitPin() {
-            if(currentPin.length < 4) return alert("PIN must be 4-6 digits");
-            document.getElementById('syncStatus').innerText = "Unlocking...";
-            encryptionKey = await deriveKeyFromPin(currentPin);
-            document.getElementById('lockScreen').classList.add('hidden');
-            document.getElementById('syncStatus').innerText = "Synced";
-            // Data loading methods will run instantly here
+            try {
+                if(currentPin.length < 4) return alert("PIN must be 4-6 digits");
+                document.getElementById('syncStatus').innerText = "Unlocking...";
+                
+                encryptionKey = await deriveKeyFromPin(currentPin);
+                document.getElementById('lockScreen').classList.add('hidden');
+                
+                // Test database connectivity and look for records
+                const { data: envs, error } = await supabase.from('envelopes').select('id').limit(1);
+                
+                if (error) {
+                    alert("Database Connection Error: " + error.message);
+                    document.getElementById('lockScreen').classList.remove('hidden');
+                    return;
+                }
+                
+                if (envs && envs.length === 0) {
+                    document.getElementById('onboardingScreen').classList.remove('hidden');
+                } else {
+                    document.getElementById('app').classList.remove('hidden');
+                    await loadDashboard();
+                }
+            } catch (err) {
+                alert("App Critical Failure at Initialization: " + err.message);
+            }
+        }
+
+        // --- BULK DATA ONBOARDING LOOPER ---
+        async function processOnboarding() {
+            const checkingVal = parseFloat(document.getElementById('initChecking').value);
+            const rawPaste = document.getElementById('envelopePaste').value;
+            if(isNaN(checkingVal) || !rawPaste) return alert("Please fill out your starting balance and paste envelope rows.");
+            
+            document.getElementById('onboardingScreen').innerHTML = "<p class='text-center py-12 text-indigo-400 animate-pulse font-bold font-mono'>🔒 Encrypting & Syncing Data locally...</p>";
+
+            // 1. Encrypt and add a baseline checking transaction to establish the balance
+            const encDate = await encryptData(new Date().toLocaleDateString(), encryptionKey);
+            const encPayee = await encryptData("Starting Balance Import", encryptionKey);
+            const encAmount = await encryptData(checkingVal.toFixed(2), encryptionKey);
+            const encType = await encryptData("credit", encryptionKey);
+            await supabase.from('checking_register').insert([{ date: encDate, payee: encPayee, amount: encAmount, type: encType }]);
+
+            // 2. Parse and loop through pasted lines from Google Sheets
+            const lines = rawPaste.trim().split('\n');
+            for(let line of lines) {
+                const cols = line.split('\t'); // Sheets copies rows as Tab separated
+                if(cols.length >= 4) {
+                    const encCat = await encryptData(cols[0].trim(), encryptionKey);
+                    const encName = await encryptData(cols[1].trim(), encryptionKey);
+                    const encBudget = await encryptData(parseFloat(cols[2]).toFixed(2), encryptionKey);
+                    const encCurrent = await encryptData(parseFloat(cols[3]).toFixed(2), encryptionKey);
+
+                    await supabase.from('envelopes').insert([{
+                        category: encCat, name: encName, monthly_budget: encBudget, current_amount: encCurrent
+                    }]);
+                }
+            }
+
+            alert("Data fully encrypted and synchronized!");
+            window.location.reload(); // Refresh to enter app mode
+        }
+
+        async function loadDashboard() {
+            const { data: txs } = await supabase.from('checking_register').select('*');
+            const { data: envs } = await supabase.from('envelopes').select('*');
+
+            let totalChecking = 0;
+            let totalEnvelopes = 0;
+
+            let txListHTML = "";
+            for(let tx of txs || []) {
+                const p = await decryptData(tx.payee, encryptionKey);
+                const a = parseFloat(await decryptData(tx.amount, encryptionKey));
+                const d = await decryptData(tx.date, encryptionKey);
+                const t = await decryptData(tx.type, encryptionKey);
+                
+                totalChecking += (t === 'credit' ? a : -a);
+                txListHTML += `<div class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700 font-mono text-sm">
+                    <div><p class="font-sans font-semibold text-white">${p}</p><p class="text-xs text-gray-500">${d}</p></div>
+                    <span class="${t === 'credit' ? 'text-emerald-400' : 'text-red-400'}">${t === 'credit' ? '+' : '-'}$${a.toFixed(2)}</span>
+                </div>`;
+            }
+            document.getElementById('transactionList').innerHTML = txListHTML || "<p class='text-gray-500 text-center text-sm py-4'>No transactions yet</p>";
+            document.getElementById('checkingBalance').innerText = `$${totalChecking.toFixed(2)}`;
+
+            let envListHTML = "";
+            for(let env of envs || []) {
+                const n = await decryptData(env.name, encryptionKey);
+                const c = await decryptData(env.category, encryptionKey);
+                const cur = parseFloat(await decryptData(env.current_amount, encryptionKey));
+                
+                totalEnvelopes += cur;
+                envListHTML += `<div class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700">
+                    <div><p class="font-semibold text-white text-sm">${n}</p><p class="text-[10px] uppercase text-indigo-400 tracking-wider">${c}</p></div>
+                    <span class="font-mono text-sm ${cur < 0 ? 'text-red-400 font-bold' : 'text-gray-300'}">$${cur.toFixed(2)}</span>
+                </div>`;
+            }
+            document.getElementById('envelopeList').innerHTML = envListHTML;
+            document.getElementById('envelopesTotal').innerText = `$${totalEnvelopes.toFixed(2)}`;
+
+            const match = totalChecking.toFixed(2) === totalEnvelopes.toFixed(2);
+            const indicator = document.getElementById('matchIndicator');
+            indicator.innerText = match ? "✓ MATCH" : "⚠ MISMATCH";
+            indicator.className = `text-xs px-2 py-1 rounded font-bold ${match ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`;
         }
 
         function switchView(view) {
