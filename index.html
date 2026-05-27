@@ -45,7 +45,7 @@
         </nav>
     </div>
 
-    <div id="app" class="max-w-md mx-auto p-4 pt-64 space-y-6 hidden">
+    <div id="app" class="max-w-md mx-auto p-4 pt-[275px] space-y-6 hidden">
         
         <section id="registerView" class="space-y-3">
             <div class="flex justify-between items-center px-1">
@@ -287,102 +287,4 @@
             document.getElementById('envelopesTotal').innerText = `$${totalEnvelopes.toFixed(2)}`;
             
             const diff = globalCheckingCachedTotal - totalEnvelopes;
-            document.getElementById('allocationDifference').innerText = `$${diff.toFixed(2)}`;
-            document.getElementById('allocationDifference').className = `text-xl font-bold font-mono ${Math.abs(diff) < 0.01 ? 'text-emerald-400' : 'text-indigo-400'}`;
-
-            const match = Math.abs(diff) < 0.01;
-            const indicator = document.getElementById('matchIndicator');
-            indicator.innerText = match ? "MATCH" : "MISMATCH";
-            indicator.className = `text-xs px-2 py-1 rounded font-bold ${match ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`;
-            document.getElementById('syncStatus').innerText = "Synced";
-        }
-
-        async function updateEnvelopeField(id, columnName, textValue) {
-            document.getElementById('syncStatus').innerText = "Syncing...";
-            try {
-                let encValue;
-                if(columnName === 'current_amount' || columnName === 'monthly_budget') {
-                    let parsedNum = parseFloat(textValue) || 0;
-                    encValue = await encryptData(parsedNum.toFixed(2), encryptionKey);
-                } else {
-                    encValue = await encryptData(textValue.trim(), encryptionKey);
-                }
-                await clientSupabase.from('envelopes').update({ [columnName]: encValue }).eq('id', id);
-                await loadDashboard();
-            } catch(e) { alert("Failed to save changes: " + e.message); }
-        }
-
-        function openTxModal() { document.getElementById('txModal').classList.remove('hidden'); }
-        function closeTxModal() { document.getElementById('txModal').classList.add('hidden'); }
-
-        async function submitTransaction() {
-            const payee = document.getElementById('txPayee').value;
-            const amount = parseFloat(document.getElementById('txAmount').value);
-            const note = document.getElementById('txNote').value;
-
-            if(!payee || isNaN(amount)) return alert("Please fill out payee and amount fields.");
-            closeTxModal();
-            document.getElementById('syncStatus').innerText = "Encrypting...";
-
-            const encDate = await encryptData(new Date().toLocaleDateString(), encryptionKey);
-            const encPayee = await encryptData(payee, encryptionKey);
-            const encAmount = await encryptData(Math.abs(amount).toFixed(2), encryptionKey);
-            const encType = await encryptData(amount < 0 ? 'debit' : 'credit', encryptionKey);
-            const encNote = await encryptData(note, encryptionKey);
-
-            await clientSupabase.from('checking_register').insert([{ 
-                date: encDate, payee: encPayee, amount: encAmount, type: encType, notes: encNote 
-            }]);
-
-            document.getElementById('txPayee').value = "";
-            document.getElementById('txAmount').value = "";
-            document.getElementById('txNote').value = "";
-
-            await loadDashboard();
-        }
-
-        async function processOnboarding() {
-            const checkingVal = parseFloat(document.getElementById('initChecking').value);
-            const rawPaste = document.getElementById('envelopePaste').value;
-            if(isNaN(checkingVal) || !rawPaste) return alert("Fill out fields.");
-            
-            document.getElementById('syncStatus').innerText = "Uploading data...";
-            
-            await clientSupabase.from('checking_register').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-            await clientSupabase.from('envelopes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-
-            const encDate = await encryptData(new Date().toLocaleDateString(), encryptionKey);
-            const encPayee = await encryptData("Imported Baseline Balance", encryptionKey);
-            const encAmount = await encryptData(checkingVal.toFixed(2), encryptionKey);
-            const encType = await encryptData("credit", encryptionKey);
-            await clientSupabase.from('checking_register').insert([{ date: encDate, payee: encPayee, amount: encAmount, type: encType }]);
-
-            const lines = rawPaste.trim().split('\n');
-            for(let line of lines) {
-                const cols = line.split('\t');
-                if(cols.length >= 4) {
-                    const encCat = await encryptData(cols[0].trim(), encryptionKey);
-                    const encName = await encryptData(cols[1].trim(), encryptionKey);
-                    const encBudget = await encryptData(parseFloat(cols[2]).toFixed(2), encryptionKey);
-                    const encCurrent = await encryptData(parseFloat(cols[3]).toFixed(2), encryptionKey);
-
-                    await clientSupabase.from('envelopes').insert([{
-                        category: encCat, name: encName, monthly_budget: encBudget, current_amount: encCurrent
-                    }]);
-                }
-            }
-            alert("Sheet records safely overwritten & sync complete!");
-            switchView('register');
-            await loadDashboard();
-        }
-
-        function switchView(view) {
-            document.getElementById('registerView').classList.toggle('hidden', view !== 'register');
-            document.getElementById('envelopesView').classList.toggle('hidden', view !== 'envelopes');
-            document.getElementById('toolsView').classList.toggle('hidden', view !== 'tools');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('bg-emerald-600', 'bg-gray-800'));
-            event.currentTarget.classList.replace('bg-gray-800', 'bg-emerald-600');
-        }
-    </script>
-</body>
-</html>
+            document.getElementById('allocationDifference').innerText
