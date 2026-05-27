@@ -9,23 +9,22 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans antialiased pb-24">
+<body class="bg-gray-900 text-gray-100 font-sans antialiased">
 
-    <div id="app" class="max-w-md mx-auto p-4 space-y-6 hidden">
-        <!-- Header Balance Tracker -->
+    <div class="fixed top-0 left-0 right-0 bg-gray-900 z-30 max-w-md mx-auto p-4 pb-2 space-y-4 border-b border-gray-800 shadow-md">
         <header class="bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-700">
             <div class="flex justify-between items-center mb-4">
-                <h1 class="text-xl font-bold tracking-tight">🔒 Regions Acct</h1>
+                <h1 class="text-xl font-bold tracking-tight">Secure Ledger</h1>
                 <span id="syncStatus" class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full font-mono">Synced</span>
             </div>
             <div class="space-y-3">
                 <div class="flex justify-between items-end">
                     <div>
-                        <p class="text-xs text-gray-400 uppercase tracking-wider">Checking Balance</p>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Checking Balance</p>
                         <p id="checkingBalance" class="text-3xl font-bold text-emerald-400 font-mono">$0.00</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-xs text-gray-400 uppercase tracking-wider">Left to Allocate</p>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Left to Allocate</p>
                         <p id="allocationDifference" class="text-xl font-bold text-indigo-400 font-mono">$0.00</p>
                     </div>
                 </div>
@@ -34,40 +33,48 @@
                         <p class="text-xs text-gray-400">Envelopes Total</p>
                         <p id="envelopesTotal" class="text-sm font-semibold font-mono text-gray-200">$0.00</p>
                     </div>
-                    <div id="matchIndicator" class="text-xs px-2 py-1 rounded font-bold bg-emerald-950 text-emerald-400">✓ MATCH</div>
+                    <div id="matchIndicator" class="text-xs px-2 py-1 rounded font-bold bg-emerald-950 text-emerald-400">MATCH</div>
                 </div>
             </div>
         </header>
 
-        <!-- Navigation -->
         <nav class="grid grid-cols-3 gap-2">
-            <button onclick="switchView('register')" class="nav-btn bg-emerald-600 text-white font-medium py-3 rounded-xl shadow-md text-sm">📝 Register</button>
-            <button onclick="switchView('envelopes')" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm">📁 Envelopes</button>
-            <button onclick="switchView('tools')" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm">🛠️ Tools</button>
+            <button onclick="switchView('register')" class="nav-btn bg-emerald-600 text-white font-medium py-3 rounded-xl shadow-md text-sm transition">Register</button>
+            <button onclick="switchView('envelopes')" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm transition">Envelopes</button>
+            <button onclick="switchView('tools')" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm transition">Tools</button>
         </nav>
+    </div>
 
-        <!-- View 1: Register -->
+    <main class="max-w-md mx-auto p-4 pt-64 space-y-6">
+        
         <section id="registerView" class="space-y-3">
             <div class="flex justify-between items-center px-1">
                 <h2 class="text-lg font-semibold">Recent Transactions</h2>
-                <button onclick="openTxModal()" class="bg-indigo-600 text-white text-xs font-bold px-3 py-2 rounded-lg shadow">+ Entry</button>
+                <button onclick="openTxModal()" class="bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-lg shadow">+ Entry</button>
             </div>
-            <div id="transactionList" class="space-y-2"></div>
+            <div id="transactionList" class="space-y-2 pb-12"></div>
         </section>
 
-        <!-- View 2: Envelopes (Direct Inline Editing) -->
-        <section id="envelopesView" class="space-y-4 hidden">
-            <div class="px-1">
-                <h2 class="text-lg font-semibold">Your Envelopes</h2>
-                <p class="text-xs text-gray-400">Tap any balance field to manually change values and match your budget.</p>
+        <section id="envelopesView" class="space-y-4 hidden pb-12">
+            <div class="px-1 flex justify-between items-end">
+                <div>
+                    <h2 class="text-lg font-semibold">Your Envelopes</h2>
+                    <p class="text-[11px] text-gray-400">Grouped and sorted alphabetically by Category.</p>
+                </div>
+            </div>
+            <div class="flex font-mono text-[9px] uppercase tracking-wider text-gray-500 px-3">
+                <div class="w-1/2">Category / Envelope Name</div>
+                <div class="w-1/2 flex justify-end space-x-12 pr-4">
+                    <span>Budget</span>
+                    <span>Balance</span>
+                </div>
             </div>
             <div id="envelopeList" class="grid grid-cols-1 gap-2"></div>
         </section>
 
-        <!-- View 3: Setup Tools -->
-        <section id="toolsView" class="space-y-4 hidden">
+        <section id="toolsView" class="space-y-4 hidden pb-12">
             <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 space-y-4">
-                <h3 class="text-md font-bold text-indigo-400">📊 Sheets Data Import Tool</h3>
+                <h3 class="text-md font-bold text-indigo-400">Data Import Tool</h3>
                 <p class="text-xs text-gray-400">Wipe tables and re-seed from Google Sheets if needed.</p>
                 <div>
                     <label class="block text-[10px] font-medium text-gray-400 uppercase mb-1">Starting Checking Balance</label>
@@ -77,12 +84,11 @@
                     <label class="block text-[10px] font-medium text-gray-400 uppercase mb-1">Paste Envelopes From Sheet</label>
                     <textarea id="envelopePaste" rows="4" placeholder="Category&#9;Name&#9;Budget&#9;Current" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-[11px] font-mono text-white"></textarea>
                 </div>
-                <button onclick="processOnboarding()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl text-sm shadow">🔒 Run Secure Import</button>
+                <button onclick="processOnboarding()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl text-sm shadow">Run Secure Import</button>
             </div>
         </section>
-    </div>
+    </main>
 
-    <!-- Modal: New Transaction Form -->
     <div id="txModal" class="fixed inset-0 bg-gray-950/80 backup-blur-sm hidden flex flex-col justify-end z-40">
         <div class="bg-gray-800 rounded-t-3xl p-6 space-y-4 max-w-md mx-auto w-full border-t border-gray-700">
             <div class="flex justify-between items-center">
@@ -103,11 +109,10 @@
                 <label class="block text-[10px] text-gray-400 uppercase">Memo / Note</label>
                 <input type="text" id="txNote" placeholder="Additional details..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white">
             </div>
-            <button onclick="submitTransaction()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md">🔒 Secure Post to Register</button>
+            <button onclick="submitTransaction()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md">Secure Post to Register</button>
         </div>
     </div>
 
-    <!-- Security Pin Pad Screen -->
     <div id="lockScreen" class="fixed inset-0 bg-gray-950 flex flex-col justify-center items-center z-50 p-6">
         <div class="max-w-xs w-full text-center space-y-6">
             <h2 class="text-2xl font-bold">Enter Encryption PIN</h2>
@@ -130,7 +135,6 @@
         </div>
     </div>
 
-    <!-- Core App Engine JavaScript -->
     <script>
         // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://rqojihfryxicnojxiphc.supabase.co';
@@ -141,41 +145,30 @@
         let currentPin = "";
         let globalCheckingCachedTotal = 0;
 
-        // Resilient Fallback Setup Engine
         function initSupabase() {
             try {
                 if (window.supabase && window.supabase.createClient) {
                     clientSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                     return true;
                 }
-            } catch(e) { 
-                console.error("Supabase load pending...", e); 
-            }
+            } catch(e) { console.error("Supabase load pending...", e); }
             return false;
         }
 
-        // Force layout display completely separate from connection status
         window.onload = function() {
             initSupabase();
             document.getElementById('lockScreen').classList.remove('hidden');
         };
 
-        // --- PIN PAD UTILITIES ---
         function pressPin(num) { 
-            if(currentPin.length < 6) { 
-                currentPin += num; 
-                document.getElementById('pinInput').value = "*".repeat(currentPin.length); 
-            } 
+            if(currentPin.length < 6) { currentPin += num; document.getElementById('pinInput').value = "*".repeat(currentPin.length); } 
         }
         function clearPin() { currentPin = ""; document.getElementById('pinInput').value = ""; }
         
         async function submitPin() {
             try {
-                // If it wasn't loaded at startup, try one more time right now
                 if(!clientSupabase) initSupabase();
-                if(!clientSupabase) {
-                    return alert("Database loading is being blocked by your network or browser extensions. Try turning off ad-blockers.");
-                }
+                if(!clientSupabase) return alert("Database offline. Reload recommended.");
                 if(currentPin.length < 4) return alert("PIN must be 4-6 digits");
                 
                 document.getElementById('syncStatus').innerText = "Unlocking...";
@@ -219,7 +212,7 @@
             } catch (e) { return "[Decryption Error]"; }
         }
 
-        // --- CORE CALCULATIONS & DASHBOARD POPULATER ---
+        // --- DASHBOARD AND AUTOMATIC SORT BUILDER ---
         async function loadDashboard() {
             const { data: txs } = await clientSupabase.from('checking_register').select('*');
             const { data: envs } = await clientSupabase.from('envelopes').select('*');
@@ -227,6 +220,7 @@
             let totalChecking = 0;
             let totalEnvelopes = 0;
 
+            // Render Register Section
             let txListHTML = "";
             for(let tx of txs || []) {
                 const p = await decryptData(tx.payee, encryptionKey);
@@ -251,67 +245,86 @@
             document.getElementById('checkingBalance').innerText = `$${totalChecking.toFixed(2)}`;
             globalCheckingCachedTotal = totalChecking;
 
-            let envListHTML = "";
+            // Decrypt and Map Envelopes Array for Processing
+            let processedEnvelopes = [];
             for(let env of envs || []) {
                 const n = await decryptData(env.name, encryptionKey);
                 const c = await decryptData(env.category, encryptionKey);
                 const cur = parseFloat(await decryptData(env.current_amount, encryptionKey));
+                const bud = env.monthly_budget ? parseFloat(await decryptData(env.monthly_budget, encryptionKey)) : 0;
                 
                 if(n !== "[Decryption Error]") {
                     totalEnvelopes += cur;
-                    envListHTML += `<div class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700">
-                        <div>
-                            <p class="font-semibold text-white text-sm">${n}</p>
-                            <p class="text-[10px] uppercase text-indigo-400 tracking-wider">${c}</p>
-                        </div>
-                        <div>
-                            <input type="number" step="0.01" value="${cur.toFixed(2)}" 
-                                onchange="updateEnvelopeBalance('${env.id}', '${env.category}', '${env.name}', this.value)"
-                                class="w-32 bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-right text-sm font-mono font-semibold text-emerald-400 focus:border-indigo-500 focus:outline-none">
-                        </div>
-                    </div>`;
+                    processedEnvelopes.push({ id: env.id, name: n, category: c, current_amount: cur, monthly_budget: bud });
                 }
             }
+
+            // Alphabetical Group Sorting Matrix (Sort Category First, Name Second)
+            processedEnvelopes.sort((a, b) => {
+                let catCompare = a.category.localeCompare(b.category, undefined, {sensitivity: 'base'});
+                if(catCompare !== 0) return catCompare;
+                return a.name.localeCompare(b.name, undefined, {sensitivity: 'base'});
+            });
+
+            // Generate Sorted Layout Row Components
+            let envListHTML = "";
+            for(let env of processedEnvelopes) {
+                envListHTML += `<div class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700 gap-2">
+                    <div class="w-1/2 min-w-0">
+                        <input type="text" value="${env.category}" 
+                            onchange="updateEnvelopeField('${env.id}', 'category', this.value)"
+                            class="bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none text-[10px] uppercase text-indigo-400 tracking-wider w-full font-semibold truncate">
+                        <input type="text" value="${env.name}" 
+                            onchange="updateEnvelopeField('${env.id}', 'name', this.value)"
+                            class="bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none font-semibold text-white text-sm w-full truncate mt-0.5">
+                    </div>
+                    <div class="w-1/2 flex justify-end items-center space-x-2 font-mono">
+                        <input type="number" step="0.01" value="${env.monthly_budget.toFixed(2)}" 
+                            onchange="updateEnvelopeField('${env.id}', 'monthly_budget', this.value)"
+                            class="w-20 bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-right text-xs text-gray-400 focus:border-indigo-500 focus:outline-none">
+                        
+                        <input type="number" step="0.01" value="${env.current_amount.toFixed(2)}" 
+                            onchange="updateEnvelopeField('${env.id}', 'current_amount', this.value)"
+                            class="w-32 bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-right text-sm font-semibold text-emerald-400 focus:border-indigo-500 focus:outline-none">
+                    </div>
+                </div>`;
+            }
+            
             document.getElementById('envelopeList').innerHTML = envListHTML || "<p class='text-gray-500 text-center text-sm py-4'>Go to Tools to import envelopes</p>";
             document.getElementById('envelopesTotal').innerText = `$${totalEnvelopes.toFixed(2)}`;
             
+            // Set dynamic discrepancy numbers
             const diff = globalCheckingCachedTotal - totalEnvelopes;
             document.getElementById('allocationDifference').innerText = `$${diff.toFixed(2)}`;
             document.getElementById('allocationDifference').className = `text-xl font-bold font-mono ${Math.abs(diff) < 0.01 ? 'text-emerald-400' : 'text-indigo-400'}`;
 
             const match = Math.abs(diff) < 0.01;
             const indicator = document.getElementById('matchIndicator');
-            indicator.innerText = match ? "✓ MATCH" : "⚠ MISMATCH";
+            indicator.innerText = match ? "MATCH" : "MISMATCH";
             indicator.className = `text-xs px-2 py-1 rounded font-bold ${match ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`;
             document.getElementById('syncStatus').innerText = "Synced";
         }
 
-        async function updateEnvelopeBalance(id, encryptedCat, encryptedName, newValue) {
+        // --- INLINE FULL ROW SYNC BACKEND ---
+        async function updateEnvelopeField(id, columnName, textValue) {
             document.getElementById('syncStatus').innerText = "Syncing...";
             try {
-                const parsedVal = parseFloat(newValue) || 0;
-                const encNewBal = await encryptData(parsedVal.toFixed(2), encryptionKey);
-                await clientSupabase.from('envelopes').update({ current_amount: encNewBal }).eq('id', id);
-                recalculateDifferencesOnly();
-            } catch(e) { alert("Failed to save changes: " + e.message); }
-        }
-
-        function recalculateDifferencesOnly() {
-            let totalEnvelopes = 0;
-            document.querySelectorAll('#envelopeList input').forEach(input => {
-                totalEnvelopes += parseFloat(input.value) || 0;
-            });
-            document.getElementById('envelopesTotal').innerText = `$${totalEnvelopes.toFixed(2)}`;
-            
-            const diff = globalCheckingCachedTotal - totalEnvelopes;
-            document.getElementById('allocationDifference').innerText = `$${diff.toFixed(2)}`;
-            document.getElementById('allocationDifference').className = `text-xl font-bold font-mono ${Math.abs(diff) < 0.01 ? 'text-emerald-400' : 'text-indigo-400'}`;
-
-            const match = Math.abs(diff) < 0.01;
-            const indicator = document.getElementById('matchIndicator');
-            indicator.innerText = match ? "✓ MATCH" : "⚠ MISMATCH";
-            indicator.className = `text-xs px-2 py-1 rounded font-bold ${match ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`;
-            document.getElementById('syncStatus').innerText = "Synced";
+                let encValue;
+                if(columnName === 'current_amount' || columnName === 'monthly_budget') {
+                    let parsedNum = parseFloat(textValue) || 0;
+                    encValue = await encryptData(parsedNum.toFixed(2), encryptionKey);
+                } else {
+                    encValue = await encryptData(textValue.trim(), encryptionKey);
+                }
+                
+                // Directly write updated variable cell block to cloud target
+                await clientSupabase.from('envelopes').update({ [columnName]: encValue }).eq('id', id);
+                
+                // Full reload dashboard ensures alphabetical sort updates instantly if text changed
+                await loadDashboard();
+            } catch(e) {
+                alert("Failed to save changes: " + e.message);
+            }
         }
 
         function openTxModal() { document.getElementById('txModal').classList.remove('hidden'); }
