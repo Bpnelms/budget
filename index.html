@@ -18,9 +18,15 @@
                 <span id="syncStatus" class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full font-mono">Synced</span>
             </div>
             <div class="space-y-3">
-                <div>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider">Checking Balance</p>
-                    <p id="checkingBalance" class="text-3xl font-bold text-emerald-400 font-mono">$0.00</p>
+                <div class="flex justify-between items-end">
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wider">Checking Balance</p>
+                        <p id="checkingBalance" class="text-3xl font-bold text-emerald-400 font-mono">$0.00</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider">Left to Allocate</p>
+                        <p id="allocationDifference" class="text-xl font-bold text-indigo-400 font-mono">$0.00</p>
+                    </div>
                 </div>
                 <div class="flex justify-between items-center pt-2 border-t border-gray-700">
                     <div>
@@ -47,9 +53,9 @@
         </section>
 
         <section id="envelopesView" class="space-y-4 hidden">
-            <div class="flex justify-between items-center px-1">
+            <div class="px-1">
                 <h2 class="text-lg font-semibold">Your Envelopes</h2>
-                <button onclick="openTransferModal()" class="text-xs bg-gray-700 text-indigo-300 px-3 py-1.5 rounded-lg border border-gray-600 font-medium">⇄ Move Money</button>
+                <p class="text-xs text-gray-400">Tap any balance field to manually change values and match your budget.</p>
             </div>
             <div id="envelopeList" class="grid grid-cols-1 gap-2"></div>
         </section>
@@ -57,7 +63,7 @@
         <section id="toolsView" class="space-y-4 hidden">
             <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 space-y-4">
                 <h3 class="text-md font-bold text-indigo-400">📊 Sheets Data Import Tool</h3>
-                <p class="text-xs text-gray-400">Seed your ledger using your current values from Google Sheets.</p>
+                <p class="text-xs text-gray-400">Wipe tables and re-seed from Google Sheets if needed.</p>
                 <div>
                     <label class="block text-[10px] font-medium text-gray-400 uppercase mb-1">Starting Checking Balance</label>
                     <input type="number" id="initChecking" step="0.01" placeholder="1432.50" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-white font-mono text-sm">
@@ -79,61 +85,19 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label class="block text-[10px] text-gray-400 uppercase">Payee / Store</label>
-                    <input type="text" id="txPayee" placeholder="Tractor Supply" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white">
+                    <label class="block text-[10px] text-gray-400 uppercase">Payee / Source</label>
+                    <input type="text" id="txPayee" placeholder="Store or Employer" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white">
                 </div>
                 <div>
-                    <label class="block text-[10px] text-gray-400 uppercase">Total Amount</label>
+                    <label class="block text-[10px] text-gray-400 uppercase">Amount (+ or -)</label>
                     <input type="number" id="txAmount" step="0.01" placeholder="-45.00" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white font-mono">
                 </div>
             </div>
             <div>
-                <label class="block text-[10px] text-gray-400 uppercase">Deduct From Envelope</label>
-                <select id="txEnvelopeSelect" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white font-mono"></select>
+                <label class="block text-[10px] text-gray-400 uppercase">Memo / Note</label>
+                <input type="text" id="txNote" placeholder="Additional details..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white">
             </div>
-            <button onclick="submitTransaction()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md">🔒 Secure Post</button>
-        </div>
-    </div>
-
-    <div id="transferModal" class="fixed inset-0 bg-gray-950/80 backup-blur-sm hidden flex flex-col justify-end z-40">
-        <div class="bg-gray-800 rounded-t-3xl p-6 space-y-4 max-w-md mx-auto w-full border-t border-gray-700">
-            <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold">Envelope Transfer</h3>
-                <button onclick="closeTransferModal()" class="text-gray-400 text-sm">Cancel</button>
-            </div>
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-[10px] text-gray-400 uppercase">From Envelope</label>
-                    <select id="srcEnvelopeSelect" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white font-mono"></select>
-                </div>
-                <div>
-                    <label class="block text-[10px] text-gray-400 uppercase">To Envelope</label>
-                    <select id="destEnvelopeSelect" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white font-mono"></select>
-                </div>
-                <div>
-                    <label class="block text-[10px] text-gray-400 uppercase">Amount to Transfer</label>
-                    <input type="number" id="transferAmount" placeholder="50.00" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white font-mono">
-                </div>
-            </div>
-            <button onclick="submitTransfer()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-md">🔒 Transfer Balances</button>
-        </div>
-    </div>
-
-    <div id="lockScreen" class="fixed inset-0 bg-gray-950 flex flex-col justify-center items-center z-50 p-6">
-        <div class="max-w-xs w-full text-center space-y-6">
-            <h2 class="text-2xl font-bold">Enter Encryption PIN</h2>
-            <p class="text-xs text-gray-400">This PIN decrypts your logs locally. It is never sent to Supabase.</p>
-            <input type="password" id="pinInput" maxlength="6" readonly class="w-full text-center text-3xl font-mono tracking-widest bg-gray-900 border border-gray-700 rounded-xl py-3 text-white">
-            <div class="grid grid-cols-3 gap-3">
-                <script>
-                    for(let i=1; i<=9; i++) {
-                        document.write(`<button onclick="pressPin('${i}')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">${i}</button>`);
-                    }
-                </script>
-                <button onclick="clearPin()" class="bg-red-950 text-red-400 text-sm font-bold py-4 rounded-xl border border-red-900 active:bg-red-900 select-none">CLEAR</button>
-                <button onclick="pressPin('0')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">0</button>
-                <button onclick="submitPin()" class="bg-emerald-600 text-white text-sm font-bold py-4 rounded-xl shadow-lg active:bg-emerald-500 select-none">ENTER</button>
-            </div>
+            <button onclick="submitTransaction()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md">🔒 Secure Post to Register</button>
         </div>
     </div>
 
@@ -145,7 +109,7 @@
         let clientSupabase = null;
         let encryptionKey = null;
         let currentPin = "";
-        let localEnvelopesCached = [];
+        let globalCheckingCachedTotal = 0;
 
         function initSupabase() {
             try {
@@ -215,7 +179,6 @@
 
             let totalChecking = 0;
             let totalEnvelopes = 0;
-            localEnvelopesCached = [];
 
             let txListHTML = "";
             for(let tx of txs || []) {
@@ -223,21 +186,26 @@
                 const a = parseFloat(await decryptData(tx.amount, encryptionKey));
                 const d = await decryptData(tx.date, encryptionKey);
                 const t = await decryptData(tx.type, encryptionKey);
+                // Handle optional notes column safely if it exists
+                const n = tx.notes ? await decryptData(tx.notes, encryptionKey) : "";
                 
                 if(!isNaN(a)) {
                     totalChecking += (t === 'credit' ? a : -a);
                     txListHTML += `<div class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700 font-mono text-sm">
-                        <div><p class="font-sans font-semibold text-white">${p}</p><p class="text-xs text-gray-500">${d}</p></div>
+                        <div>
+                            <p class="font-sans font-semibold text-white">${p}</p>
+                            ${n && n !== "[Decryption Error]" ? `<p class="text-[11px] font-sans text-indigo-400 mt-0.5">${n}</p>` : ''}
+                            <p class="text-[10px] text-gray-500 mt-0.5">${d}</p>
+                        </div>
                         <span class="${t === 'credit' ? 'text-emerald-400' : 'text-red-400'}">${t === 'credit' ? '+' : '-'}$${Math.abs(a).toFixed(2)}</span>
                     </div>`;
                 }
             }
             document.getElementById('transactionList').innerHTML = txListHTML || "<p class='text-gray-500 text-center text-sm py-4'>No transactions yet</p>";
             document.getElementById('checkingBalance').innerText = `$${totalChecking.toFixed(2)}`;
+            globalCheckingCachedTotal = totalChecking;
 
             let envListHTML = "";
-            let selectHTML = `<option value="none">None (Bypass Envelopes)</option>`;
-            
             for(let env of envs || []) {
                 const n = await decryptData(env.name, encryptionKey);
                 const c = await decryptData(env.category, encryptionKey);
@@ -245,39 +213,79 @@
                 
                 if(n !== "[Decryption Error]") {
                     totalEnvelopes += cur;
-                    localEnvelopesCached.push({ id: env.id, name: n, current_amount: cur });
-                    
-                    selectHTML += `<option value="${env.id}">${n} ($${cur.toFixed(2)})</option>`;
                     envListHTML += `<div class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700">
-                        <div><p class="font-semibold text-white text-sm">${n}</p><p class="text-[10px] uppercase text-indigo-400 tracking-wider">${c}</p></div>
-                        <span class="font-mono text-sm ${cur < 0 ? 'text-red-400 font-bold' : 'text-gray-300'}">$${cur.toFixed(2)}</span>
+                        <div>
+                            <p class="font-semibold text-white text-sm">${n}</p>
+                            <p class="text-[10px] uppercase text-indigo-400 tracking-wider">${c}</p>
+                        </div>
+                        <div>
+                            <input type="number" step="0.01" value="${cur.toFixed(2)}" 
+                                onchange="updateEnvelopeBalance('${env.id}', '${env.category}', '${env.name}', this.value)"
+                                class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-right text-sm font-mono font-semibold text-emerald-400 focus:border-indigo-500 focus:outline-none">
+                        </div>
                     </div>`;
                 }
             }
             document.getElementById('envelopeList').innerHTML = envListHTML || "<p class='text-gray-500 text-center text-sm py-4'>Go to Tools to import envelopes</p>";
             document.getElementById('envelopesTotal').innerText = `$${totalEnvelopes.toFixed(2)}`;
             
-            document.getElementById('txEnvelopeSelect').innerHTML = selectHTML;
-            document.getElementById('srcEnvelopeSelect').innerHTML = selectHTML;
-            document.getElementById('destEnvelopeSelect').innerHTML = selectHTML;
+            // Calculate discrepancy
+            const diff = globalCheckingCachedTotal - totalEnvelopes;
+            document.getElementById('allocationDifference').innerText = `$${diff.toFixed(2)}`;
+            document.getElementById('allocationDifference').className = `text-xl font-bold font-mono ${Math.abs(diff) < 0.01 ? 'text-emerald-400' : 'text-indigo-400'}`;
 
-            const match = totalChecking.toFixed(2) === totalEnvelopes.toFixed(2);
+            const match = Math.abs(diff) < 0.01;
             const indicator = document.getElementById('matchIndicator');
             indicator.innerText = match ? "✓ MATCH" : "⚠ MISMATCH";
             indicator.className = `text-xs px-2 py-1 rounded font-bold ${match ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`;
             document.getElementById('syncStatus').innerText = "Synced";
         }
 
-        // --- TRANSACTION SUBMITTER ---
+        // --- INLINE ENVELOPE BALANCE SYNC BACKEND ---
+        async function updateEnvelopeBalance(id, encryptedCat, encryptedName, newValue) {
+            document.getElementById('syncStatus').innerText = "Syncing...";
+            try {
+                const parsedVal = parseFloat(newValue) || 0;
+                const encNewBal = await encryptData(parsedVal.toFixed(2), encryptionKey);
+                
+                // Update Supabase directly
+                await clientSupabase.from('envelopes').update({ current_amount: encNewBal }).eq('id', id);
+                
+                // Recalculate numbers locally without full redraw flicker
+                recalculateDifferencesOnly();
+            } catch(e) {
+                alert("Failed to save changes: " + e.message);
+            }
+        }
+
+        function recalculateDifferencesOnly() {
+            let totalEnvelopes = 0;
+            document.querySelectorAll('#envelopeList input').forEach(input => {
+                totalEnvelopes += parseFloat(input.value) || 0;
+            });
+            document.getElementById('envelopesTotal').innerText = `$${totalEnvelopes.toFixed(2)}`;
+            
+            const diff = globalCheckingCachedTotal - totalEnvelopes;
+            document.getElementById('allocationDifference').innerText = `$${diff.toFixed(2)}`;
+            document.getElementById('allocationDifference').className = `text-xl font-bold font-mono ${Math.abs(diff) < 0.01 ? 'text-emerald-400' : 'text-indigo-400'}`;
+
+            const match = Math.abs(diff) < 0.01;
+            const indicator = document.getElementById('matchIndicator');
+            indicator.innerText = match ? "✓ MATCH" : "⚠ MISMATCH";
+            indicator.className = `text-xs px-2 py-1 rounded font-bold ${match ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`;
+            document.getElementById('syncStatus').innerText = "Synced";
+        }
+
+        // --- TRANSACTION REGISTER SUBMITTER ---
         function openTxModal() { document.getElementById('txModal').classList.remove('hidden'); }
         function closeTxModal() { document.getElementById('txModal').classList.add('hidden'); }
 
         async function submitTransaction() {
             const payee = document.getElementById('txPayee').value;
             const amount = parseFloat(document.getElementById('txAmount').value);
-            const envId = document.getElementById('txEnvelopeSelect').value;
+            const note = document.getElementById('txNote').value;
 
-            if(!payee || isNaN(amount)) return alert("Fill out fields.");
+            if(!payee || isNaN(amount)) return alert("Please fill out payee and amount fields.");
             closeTxModal();
             document.getElementById('syncStatus').innerText = "Encrypting...";
 
@@ -285,54 +293,32 @@
             const encPayee = await encryptData(payee, encryptionKey);
             const encAmount = await encryptData(Math.abs(amount).toFixed(2), encryptionKey);
             const encType = await encryptData(amount < 0 ? 'debit' : 'credit', encryptionKey);
+            const encNote = await encryptData(note, encryptionKey);
 
-            // Push Transaction to Register
-            await clientSupabase.from('checking_register').insert([{ date: encDate, payee: encPayee, amount: encAmount, type: encType }]);
+            // Push Transaction to Register with secure notes
+            await clientSupabase.from('checking_register').insert([{ 
+                date: encDate, payee: encPayee, amount: encAmount, type: encType, notes: encNote 
+            }]);
 
-            // Update associated envelope
-            if(envId !== "none") {
-                const targetedEnv = localEnvelopesCached.find(e => e.id === envId);
-                if(targetedEnv) {
-                    let updatedBalance = targetedEnv.current_amount + amount; // Handles debits automatically
-                    const encNewBal = await encryptData(updatedBalance.toFixed(2), encryptionKey);
-                    await clientSupabase.from('envelopes').update({ current_amount: encNewBal }).eq('id', envId);
-                }
-            }
-            await loadDashboard();
-        }
-
-        // --- ENVELOPE BALANCES INTER-TRANSFER ---
-        function openTransferModal() { document.getElementById('transferModal').classList.remove('hidden'); }
-        function closeTransferModal() { document.getElementById('transferModal').classList.add('hidden'); }
-
-        async function submitTransfer() {
-            const srcId = document.getElementById('srcEnvelopeSelect').value;
-            const destId = document.getElementById('destEnvelopeSelect').value;
-            const amount = parseFloat(document.getElementById('transferAmount').value);
-
-            if(srcId === "none" || destId === "none" || isNaN(amount)) return alert("Select valid envelopes.");
-            closeTransferModal();
-            document.getElementById('syncStatus').innerText = "Syncing Transfer...";
-
-            const srcEnv = localEnvelopesCached.find(e => e.id === srcId);
-            const destEnv = localEnvelopesCached.find(e => e.id === destId);
-
-            const encSrcVal = await encryptData((srcEnv.current_amount - amount).toFixed(2), encryptionKey);
-            await clientSupabase.from('envelopes').update({ current_amount: encSrcVal }).eq('id', srcId);
-
-            const encDestVal = await encryptData((destEnv.current_amount + amount).toFixed(2), encryptionKey);
-            await clientSupabase.from('envelopes').update({ current_amount: encDestVal }).eq('id', destId);
+            // Clear inputs
+            document.getElementById('txPayee').value = "";
+            document.getElementById('txAmount').value = "";
+            document.getElementById('txNote').value = "";
 
             await loadDashboard();
         }
 
-        // --- SHEET INJECT ENGINE ---
+        // --- SHEET RE-IMPORT ENGINE ---
         async function processOnboarding() {
             const checkingVal = parseFloat(document.getElementById('initChecking').value);
             const rawPaste = document.getElementById('envelopePaste').value;
             if(isNaN(checkingVal) || !rawPaste) return alert("Fill out fields.");
             
             document.getElementById('syncStatus').innerText = "Uploading data...";
+            
+            // Clear prior records completely to prevent duplicate stacks
+            await clientSupabase.from('checking_register').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            await clientSupabase.from('envelopes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
             const encDate = await encryptData(new Date().toLocaleDateString(), encryptionKey);
             const encPayee = await encryptData("Imported Baseline Balance", encryptionKey);
@@ -354,7 +340,7 @@
                     }]);
                 }
             }
-            alert("Sheet records safely encrypted & written!");
+            alert("Sheet records safely overwritten & sync complete!");
             switchView('register');
             await loadDashboard();
         }
