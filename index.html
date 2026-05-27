@@ -40,8 +40,8 @@
 
         <nav class="grid grid-cols-3 gap-2">
             <button id="btn-register" onclick="switchView('register')" class="nav-btn bg-emerald-600 text-white font-medium py-3 rounded-xl shadow-md text-sm transition">Register</button>
-            <button id="btn-envelopes" onclick="switchView('envelopes')" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm transition">Envelopes</button>
-            <button id="btn-tools" onclick="switchView('tools')" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm transition">Tools</button>
+            <button onclick="switchView('envelopes')" id="btn-envelopes" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm transition">Envelopes</button>
+            <button onclick="switchView('tools')" id="btn-tools" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm transition">Tools</button>
         </nav>
     </div>
 
@@ -90,10 +90,11 @@
     <div id="txModal" class="fixed inset-0 bg-gray-950/80 backup-blur-sm hidden flex flex-col justify-end z-40">
         <div class="bg-gray-800 rounded-t-3xl p-6 space-y-4 max-w-md mx-auto w-full border-t border-gray-700">
             <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold">Log Transaction</h3>
+                <h3 id="modalTitle" class="text-lg font-bold">Log Transaction</h3>
                 <button onclick="closeTxModal()" class="text-gray-400 text-sm">Cancel</button>
             </div>
-            <div class="grid grid-cols-2 gap-2">
+            
+            <input type="hidden" id="txId"> <div class="grid grid-cols-2 gap-2">
                 <div>
                     <label class="block text-[10px] text-gray-400 uppercase">Payee / Source</label>
                     <input type="text" id="txPayee" placeholder="Store or Employer" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white">
@@ -107,7 +108,11 @@
                 <label class="block text-[10px] text-gray-400 uppercase">Memo / Note</label>
                 <input type="text" id="txNote" placeholder="Additional details..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white">
             </div>
-            <button onclick="submitTransaction()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md">Secure Post to Register</button>
+            
+            <div class="space-y-2 pt-2">
+                <button onclick="submitTransaction()" id="modalSubmitBtn" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md">Secure Post to Register</button>
+                <button onclick="deleteTransaction()" id="modalDeleteBtn" class="w-full bg-red-950 text-red-400 font-bold py-3 rounded-xl border border-red-900/50 hidden">Delete Entry Entirely</button>
+            </div>
         </div>
     </div>
 
@@ -210,7 +215,7 @@
             } catch (e) { return "[Decryption Error]"; }
         }
 
-        // --- DASHBOARD AND AUTOMATIC SORT BUILDER ---
+        // --- DASHBOARD BUILDER ---
         async function loadDashboard() {
             const { data: txs } = await clientSupabase.from('checking_register').select('*');
             const { data: envs } = await clientSupabase.from('envelopes').select('*');
@@ -218,17 +223,24 @@
             let totalChecking = 0;
             let totalEnvelopes = 0;
 
+            // Render Interactive Register Section
             let txListHTML = "";
             for(let tx of txs || []) {
                 const p = await decryptData(tx.payee, encryptionKey);
-                const a = parseFloat(await decryptData(tx.amount, encryptionKey));
+                const rawAmt = await decryptData(tx.amount, encryptionKey);
+                const a = parseFloat(rawAmt);
                 const d = await decryptData(tx.date, encryptionKey);
                 const t = await decryptData(tx.type, encryptionKey);
                 const n = tx.notes ? await decryptData(tx.notes, encryptionKey) : "";
                 
+                const trueSignedValue = (t === 'credit' ? a : -a);
+
                 if(!isNaN(a)) {
-                    totalChecking += (t === 'credit' ? a : -a);
-                    txListHTML += `<div class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700 font-mono text-sm">
+                    totalChecking += trueSignedValue;
+                    
+                    // Escaped values packaged into arguments to safely invoke the edit screen on selection click
+                    txListHTML += `<div onclick="openEditTxModal('${tx.id}', '${p.replace(/'/g, "\\'")}', ${trueSignedValue}, '${n.replace(/'/g, "\\'")}')" 
+                        class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700 font-mono text-sm active:bg-gray-700 cursor-pointer transition select-none">
                         <div>
                             <p class="font-sans font-semibold text-white">${p}</p>
                             ${n && n !== "[Decryption Error]" && n.trim() !== "" ? `<p class="text-[11px] font-sans text-indigo-400 font-medium mt-0.5">${n}</p>` : ''}
@@ -269,7 +281,7 @@
                             onchange="updateEnvelopeField('${env.id}', 'category', this.value)"
                             class="bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none text-[10px] uppercase text-indigo-400 tracking-wider w-full font-semibold truncate">
                         <input type="text" value="${env.name}" 
-                            onchange="updateEnvelopeField('${env.id}', 'name', this.value)"
+运行                            onchange="updateEnvelopeField('${env.id}', 'name', this.value)"
                             class="bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none font-semibold text-white text-sm w-full truncate mt-0.5">
                     </div>
                     <div class="w-1/2 flex justify-end items-center space-x-2 font-mono">
@@ -312,10 +324,38 @@
             } catch(e) { alert("Failed to save changes: " + e.message); }
         }
 
-        function openTxModal() { document.getElementById('txModal').classList.remove('hidden'); }
+        // --- TRANSACTION MODAL INTERACTION ENGINES ---
+        function openTxModal() { 
+            document.getElementById('txId').value = ""; // Empty ID means New Entry mode
+            document.getElementById('modalTitle').innerText = "Log Transaction";
+            document.getElementById('modalSubmitBtn').innerText = "Secure Post to Register";
+            document.getElementById('modalSubmitBtn').className = "w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md";
+            document.getElementById('modalDeleteBtn').classList.add('hidden');
+            
+            document.getElementById('txPayee').value = "";
+            document.getElementById('txAmount').value = "";
+            document.getElementById('txNote').value = "";
+            document.getElementById('txModal').classList.remove('hidden'); 
+        }
+
+        function openEditTxModal(id, payee, amount, note) {
+            document.getElementById('txId').value = id; // Populating ID flips modal to Edit Mode
+            document.getElementById('modalTitle').innerText = "Edit Transaction Log";
+            document.getElementById('modalSubmitBtn').innerText = "Apply Secure Changes";
+            document.getElementById('modalSubmitBtn').className = "w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-md";
+            document.getElementById('modalDeleteBtn').classList.remove('hidden');
+            
+            document.getElementById('txPayee').value = payee;
+            document.getElementById('txAmount').value = amount;
+            document.getElementById('txNote').value = note === "[Decryption Error]" ? "" : note;
+            document.getElementById('txModal').classList.remove('hidden');
+        }
+
         function closeTxModal() { document.getElementById('txModal').classList.add('hidden'); }
 
+        // Core Insert & Update Post Master
         async function submitTransaction() {
+            const id = document.getElementById('txId').value;
             const payee = document.getElementById('txPayee').value;
             const amount = parseFloat(document.getElementById('txAmount').value);
             const note = document.getElementById('txNote').value;
@@ -324,21 +364,46 @@
             closeTxModal();
             document.getElementById('syncStatus').innerText = "Encrypting...";
 
-            const encDate = await encryptData(new Date().toLocaleDateString(), encryptionKey);
             const encPayee = await encryptData(payee, encryptionKey);
             const encAmount = await encryptData(Math.abs(amount).toFixed(2), encryptionKey);
             const encType = await encryptData(amount < 0 ? 'debit' : 'credit', encryptionKey);
             const encNote = await encryptData(note, encryptionKey);
 
-            await clientSupabase.from('checking_register').insert([{ 
-                date: encDate, payee: encPayee, amount: encAmount, type: encType, notes: encNote 
-            }]);
+            if (id && id.trim() !== "") {
+                // RUN UPDATE LOGIC ON TARGET ROW
+                await clientSupabase.from('checking_register').update({
+                    payee: encPayee, amount: encAmount, type: encType, notes: encNote
+                }).eq('id', id);
+            } else {
+                // RUN NEW INSERT ENTRY LOGIC
+                const encDate = await encryptData(new Date().toLocaleDateString(), encryptionKey);
+                await clientSupabase.from('checking_register').insert([{ 
+                    date: encDate, payee: encPayee, amount: encAmount, type: encType, notes: encNote 
+                }]);
+            }
 
             document.getElementById('txPayee').value = "";
             document.getElementById('txAmount').value = "";
             document.getElementById('txNote').value = "";
+            document.getElementById('txId').value = "";
 
             await loadDashboard();
+        }
+
+        // Core Row Deleter Function
+        async function deleteTransaction() {
+            const id = document.getElementById('txId').value;
+            if(!id) return;
+            
+            if(confirm("Are you sure you want to completely delete this transaction from your log?")) {
+                closeTxModal();
+                document.getElementById('syncStatus').innerText = "Deleting...";
+                
+                await clientSupabase.from('checking_register').delete().eq('id', id);
+                
+                document.getElementById('txId').value = "";
+                await loadDashboard();
+            }
         }
 
         async function processOnboarding() {
