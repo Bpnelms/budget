@@ -12,6 +12,7 @@
 <body class="bg-gray-900 text-gray-100 font-sans antialiased pb-24">
 
     <div id="app" class="max-w-md mx-auto p-4 space-y-6 hidden">
+        <!-- Header Balance Tracker -->
         <header class="bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-700">
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-xl font-bold tracking-tight">🔒 Secure Ledger</h1>
@@ -38,12 +39,14 @@
             </div>
         </header>
 
+        <!-- Navigation -->
         <nav class="grid grid-cols-3 gap-2">
             <button onclick="switchView('register')" class="nav-btn bg-emerald-600 text-white font-medium py-3 rounded-xl shadow-md text-sm">📝 Register</button>
             <button onclick="switchView('envelopes')" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm">📁 Envelopes</button>
             <button onclick="switchView('tools')" class="nav-btn bg-gray-800 text-gray-300 font-medium py-3 rounded-xl border border-gray-700 text-sm">🛠️ Tools</button>
         </nav>
 
+        <!-- View 1: Register -->
         <section id="registerView" class="space-y-3">
             <div class="flex justify-between items-center px-1">
                 <h2 class="text-lg font-semibold">Recent Transactions</h2>
@@ -52,6 +55,7 @@
             <div id="transactionList" class="space-y-2"></div>
         </section>
 
+        <!-- View 2: Envelopes (Direct Inline Editing) -->
         <section id="envelopesView" class="space-y-4 hidden">
             <div class="px-1">
                 <h2 class="text-lg font-semibold">Your Envelopes</h2>
@@ -60,6 +64,7 @@
             <div id="envelopeList" class="grid grid-cols-1 gap-2"></div>
         </section>
 
+        <!-- View 3: Setup Tools -->
         <section id="toolsView" class="space-y-4 hidden">
             <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 space-y-4">
                 <h3 class="text-md font-bold text-indigo-400">📊 Sheets Data Import Tool</h3>
@@ -77,6 +82,7 @@
         </section>
     </div>
 
+    <!-- Modal: New Transaction Form -->
     <div id="txModal" class="fixed inset-0 bg-gray-950/80 backup-blur-sm hidden flex flex-col justify-end z-40">
         <div class="bg-gray-800 rounded-t-3xl p-6 space-y-4 max-w-md mx-auto w-full border-t border-gray-700">
             <div class="flex justify-between items-center">
@@ -101,17 +107,22 @@
         </div>
     </div>
 
+    <!-- Security Pin Pad Screen -->
     <div id="lockScreen" class="fixed inset-0 bg-gray-950 flex flex-col justify-center items-center z-50 p-6">
         <div class="max-w-xs w-full text-center space-y-6">
             <h2 class="text-2xl font-bold">Enter Encryption PIN</h2>
             <p class="text-xs text-gray-400">This PIN decrypts your logs locally. It is never sent to Supabase.</p>
-            <input type="password" id="pinInput" maxlength="6" readonly class="w-full text-center text-3xl font-mono tracking-widest bg-gray-900 border border-gray-700 rounded-xl py-3 text-white">
+            <input type="password" id="pinInput" readonly class="w-full text-center text-3xl font-mono tracking-widest bg-gray-900 border border-gray-700 rounded-xl py-3 text-white">
             <div class="grid grid-cols-3 gap-3">
-                <script>
-                    for(let i=1; i<=9; i++) {
-                        document.write(`<button onclick="pressPin('${i}')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">${i}</button>`);
-                    }
-                </script>
+                <button onclick="pressPin('1')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">1</button>
+                <button onclick="pressPin('2')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">2</button>
+                <button onclick="pressPin('3')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">3</button>
+                <button onclick="pressPin('4')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">4</button>
+                <button onclick="pressPin('5')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">5</button>
+                <button onclick="pressPin('6')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">6</button>
+                <button onclick="pressPin('7')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">7</button>
+                <button onclick="pressPin('8')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">8</button>
+                <button onclick="pressPin('9')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">9</button>
                 <button onclick="clearPin()" class="bg-red-950 text-red-400 text-sm font-bold py-4 rounded-xl border border-red-900 active:bg-red-900 select-none">CLEAR</button>
                 <button onclick="pressPin('0')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">0</button>
                 <button onclick="submitPin()" class="bg-emerald-600 text-white text-sm font-bold py-4 rounded-xl shadow-lg active:bg-emerald-500 select-none">ENTER</button>
@@ -119,6 +130,7 @@
         </div>
     </div>
 
+    <!-- Core App Engine JavaScript -->
     <script>
         // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://rqojihfryxicnojxiphc.supabase.co';
@@ -129,26 +141,41 @@
         let currentPin = "";
         let globalCheckingCachedTotal = 0;
 
-        // Safe Initialization Engine
+        // Resilient Fallback Setup Engine
         function initSupabase() {
             try {
                 if (window.supabase && window.supabase.createClient) {
                     clientSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    return true;
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                console.error("Supabase load pending...", e); 
+            }
+            return false;
         }
 
-        window.onload = function() { initSupabase(); };
+        // Force layout display completely separate from connection status
+        window.onload = function() {
+            initSupabase();
+            document.getElementById('lockScreen').classList.remove('hidden');
+        };
 
         // --- PIN PAD UTILITIES ---
         function pressPin(num) { 
-            if(currentPin.length < 6) { currentPin += num; document.getElementById('pinInput').value = "*".repeat(currentPin.length); } 
+            if(currentPin.length < 6) { 
+                currentPin += num; 
+                document.getElementById('pinInput').value = "*".repeat(currentPin.length); 
+            } 
         }
         function clearPin() { currentPin = ""; document.getElementById('pinInput').value = ""; }
         
         async function submitPin() {
             try {
+                // If it wasn't loaded at startup, try one more time right now
                 if(!clientSupabase) initSupabase();
+                if(!clientSupabase) {
+                    return alert("Database loading is being blocked by your network or browser extensions. Try turning off ad-blockers.");
+                }
                 if(currentPin.length < 4) return alert("PIN must be 4-6 digits");
                 
                 document.getElementById('syncStatus').innerText = "Unlocking...";
@@ -248,7 +275,6 @@
             document.getElementById('envelopeList').innerHTML = envListHTML || "<p class='text-gray-500 text-center text-sm py-4'>Go to Tools to import envelopes</p>";
             document.getElementById('envelopesTotal').innerText = `$${totalEnvelopes.toFixed(2)}`;
             
-            // Calculate discrepancy
             const diff = globalCheckingCachedTotal - totalEnvelopes;
             document.getElementById('allocationDifference').innerText = `$${diff.toFixed(2)}`;
             document.getElementById('allocationDifference').className = `text-xl font-bold font-mono ${Math.abs(diff) < 0.01 ? 'text-emerald-400' : 'text-indigo-400'}`;
@@ -260,7 +286,6 @@
             document.getElementById('syncStatus').innerText = "Synced";
         }
 
-        // --- INLINE ENVELOPE BALANCE SYNC BACKEND ---
         async function updateEnvelopeBalance(id, encryptedCat, encryptedName, newValue) {
             document.getElementById('syncStatus').innerText = "Syncing...";
             try {
@@ -268,9 +293,7 @@
                 const encNewBal = await encryptData(parsedVal.toFixed(2), encryptionKey);
                 await clientSupabase.from('envelopes').update({ current_amount: encNewBal }).eq('id', id);
                 recalculateDifferencesOnly();
-            } catch(e) {
-                alert("Failed to save changes: " + e.message);
-            }
+            } catch(e) { alert("Failed to save changes: " + e.message); }
         }
 
         function recalculateDifferencesOnly() {
@@ -291,7 +314,6 @@
             document.getElementById('syncStatus').innerText = "Synced";
         }
 
-        // --- TRANSACTION REGISTER SUBMITTER ---
         function openTxModal() { document.getElementById('txModal').classList.remove('hidden'); }
         function closeTxModal() { document.getElementById('txModal').classList.add('hidden'); }
 
@@ -321,7 +343,6 @@
             await loadDashboard();
         }
 
-        // --- SHEET RE-IMPORT ENGINE ---
         async function processOnboarding() {
             const checkingVal = parseFloat(document.getElementById('initChecking').value);
             const rawPaste = document.getElementById('envelopePaste').value;
