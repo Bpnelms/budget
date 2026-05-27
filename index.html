@@ -101,6 +101,24 @@
         </div>
     </div>
 
+    <div id="lockScreen" class="fixed inset-0 bg-gray-950 flex flex-col justify-center items-center z-50 p-6">
+        <div class="max-w-xs w-full text-center space-y-6">
+            <h2 class="text-2xl font-bold">Enter Encryption PIN</h2>
+            <p class="text-xs text-gray-400">This PIN decrypts your logs locally. It is never sent to Supabase.</p>
+            <input type="password" id="pinInput" maxlength="6" readonly class="w-full text-center text-3xl font-mono tracking-widest bg-gray-900 border border-gray-700 rounded-xl py-3 text-white">
+            <div class="grid grid-cols-3 gap-3">
+                <script>
+                    for(let i=1; i<=9; i++) {
+                        document.write(`<button onclick="pressPin('${i}')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">${i}</button>`);
+                    }
+                </script>
+                <button onclick="clearPin()" class="bg-red-950 text-red-400 text-sm font-bold py-4 rounded-xl border border-red-900 active:bg-red-900 select-none">CLEAR</button>
+                <button onclick="pressPin('0')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">0</button>
+                <button onclick="submitPin()" class="bg-emerald-600 text-white text-sm font-bold py-4 rounded-xl shadow-lg active:bg-emerald-500 select-none">ENTER</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://rqojihfryxicnojxiphc.supabase.co';
@@ -111,6 +129,7 @@
         let currentPin = "";
         let globalCheckingCachedTotal = 0;
 
+        // Safe Initialization Engine
         function initSupabase() {
             try {
                 if (window.supabase && window.supabase.createClient) {
@@ -121,6 +140,7 @@
 
         window.onload = function() { initSupabase(); };
 
+        // --- PIN PAD UTILITIES ---
         function pressPin(num) { 
             if(currentPin.length < 6) { currentPin += num; document.getElementById('pinInput').value = "*".repeat(currentPin.length); } 
         }
@@ -186,7 +206,6 @@
                 const a = parseFloat(await decryptData(tx.amount, encryptionKey));
                 const d = await decryptData(tx.date, encryptionKey);
                 const t = await decryptData(tx.type, encryptionKey);
-                // Handle optional notes column safely if it exists
                 const n = tx.notes ? await decryptData(tx.notes, encryptionKey) : "";
                 
                 if(!isNaN(a)) {
@@ -247,11 +266,7 @@
             try {
                 const parsedVal = parseFloat(newValue) || 0;
                 const encNewBal = await encryptData(parsedVal.toFixed(2), encryptionKey);
-                
-                // Update Supabase directly
                 await clientSupabase.from('envelopes').update({ current_amount: encNewBal }).eq('id', id);
-                
-                // Recalculate numbers locally without full redraw flicker
                 recalculateDifferencesOnly();
             } catch(e) {
                 alert("Failed to save changes: " + e.message);
@@ -295,12 +310,10 @@
             const encType = await encryptData(amount < 0 ? 'debit' : 'credit', encryptionKey);
             const encNote = await encryptData(note, encryptionKey);
 
-            // Push Transaction to Register with secure notes
             await clientSupabase.from('checking_register').insert([{ 
                 date: encDate, payee: encPayee, amount: encAmount, type: encType, notes: encNote 
             }]);
 
-            // Clear inputs
             document.getElementById('txPayee').value = "";
             document.getElementById('txAmount').value = "";
             document.getElementById('txNote').value = "";
@@ -316,7 +329,6 @@
             
             document.getElementById('syncStatus').innerText = "Uploading data...";
             
-            // Clear prior records completely to prevent duplicate stacks
             await clientSupabase.from('checking_register').delete().neq('id', '00000000-0000-0000-0000-000000000000');
             await clientSupabase.from('envelopes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
