@@ -12,28 +12,38 @@
 <body class="bg-gray-900 text-gray-100 font-sans antialiased">
 
     <div class="fixed top-0 left-0 right-0 bg-gray-900 z-30 max-w-md mx-auto p-4 pb-2 space-y-4 border-b border-gray-800 shadow-md">
-        <header class="bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-700">
-            <div class="flex justify-between items-center mb-4">
-                <h1 class="text-xl font-bold tracking-tight">Regions Account 5119</h1>
+        <header class="bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-700 space-y-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold tracking-tight">Secure Ledger</h1>
                 <span id="syncStatus" class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full font-mono">Synced</span>
             </div>
-            <div class="space-y-3">
-                <div class="flex justify-between items-end">
-                    <div>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Checking Balance</p>
-                        <p id="checkingBalance" class="text-3xl font-bold text-emerald-400 font-mono">$0.00</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Left to Allocate</p>
-                        <p id="allocationDifference" class="text-xl font-bold text-indigo-400 font-mono">$0.00</p>
-                    </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Checking Balance</p>
+                    <p id="checkingBalance" class="text-2xl font-bold text-emerald-400 font-mono">$0.00</p>
                 </div>
-                <div class="flex justify-between items-center pt-2 border-t border-gray-700">
-                    <div>
-                        <p class="text-xs text-gray-400">Envelopes Total</p>
-                        <p id="envelopesTotal" class="text-sm font-semibold font-mono text-gray-200">$0.00</p>
-                    </div>
-                    <div id="matchIndicator" class="text-xs px-2 py-1 rounded font-bold bg-emerald-950 text-emerald-400">MATCH</div>
+                <div class="text-right">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Left to Allocate</p>
+                    <p id="allocationDifference" class="text-xl font-bold text-indigo-400 font-mono">$0.00</p>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-gray-700">
+                <div>
+                    <p class="text-[10px] text-gray-400">Envelopes Total: <span id="envelopesTotal" class="font-semibold font-mono text-gray-200">$0.00</span></p>
+                </div>
+                <div id="matchIndicator" class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-950 text-emerald-400">MATCH</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-gray-700 text-left">
+                <div>
+                    <label class="block text-[9px] uppercase text-gray-400 tracking-wider font-semibold mb-0.5">Updated Date</label>
+                    <input type="date" id="hdrUpdatedDate" onchange="saveLocalTrackingDate('updated', this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-indigo-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-[9px] uppercase text-gray-400 tracking-wider font-semibold mb-0.5">Bank Sync Date</label>
+                    <input type="date" id="hdrBankSyncDate" onchange="saveLocalTrackingDate('banksync', this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-indigo-500 font-mono">
                 </div>
             </div>
         </header>
@@ -45,7 +55,7 @@
         </nav>
     </div>
 
-    <div id="app" class="max-w-md mx-auto p-4 pt-[310px] space-y-6 hidden">
+    <div id="app" class="max-w-md mx-auto p-4 pt-[365px] space-y-6 hidden">
         
         <section id="registerView" class="space-y-3">
             <div class="flex justify-between items-center px-1">
@@ -71,6 +81,15 @@
         </section>
 
         <section id="toolsView" class="space-y-4 hidden pb-12">
+            <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 space-y-3">
+                <h3 class="text-md font-bold text-emerald-400">Export Ledger Local Records</h3>
+                <p class="text-xs text-gray-400">Extract your decrypted transactions and categories into native flat CSV files for spreadsheets.</p>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="exportRegisterCSV()" class="bg-gray-900 hover:bg-gray-750 text-gray-200 border border-gray-700 py-2.5 rounded-xl font-semibold text-xs transition">Export Register CSV</button>
+                    <button onclick="exportEnvelopesCSV()" class="bg-gray-900 hover:bg-gray-750 text-gray-200 border border-gray-700 py-2.5 rounded-xl font-semibold text-xs transition">Export Envelopes CSV</button>
+                </div>
+            </div>
+
             <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 space-y-4">
                 <h3 class="text-md font-bold text-indigo-400">Data Import Tool</h3>
                 <p class="text-xs text-gray-400">Wipe tables and re-seed from Google Sheets if needed.</p>
@@ -94,7 +113,9 @@
                 <button onclick="closeTxModal()" class="text-gray-400 text-sm">Cancel</button>
             </div>
             
-            <input type="hidden" id="txId"> <div class="grid grid-cols-2 gap-2">
+            <input type="hidden" id="txId">
+
+            <div class="grid grid-cols-2 gap-2">
                 <div>
                     <label class="block text-[10px] text-gray-400 uppercase">Payee / Source</label>
                     <input type="text" id="txPayee" placeholder="Store or Employer" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-sm text-white">
@@ -147,6 +168,10 @@
         let encryptionKey = null;
         let currentPin = "";
         let globalCheckingCachedTotal = 0;
+        
+        // Cache holding clean decrypted datasets for rapid CSV packaging
+        let decryptedRegisterCache = [];
+        let decryptedEnvelopesCache = [];
 
         function initSupabase() {
             try {
@@ -160,8 +185,21 @@
 
         window.onload = function() {
             initSupabase();
+            loadLocalTrackingDates(); // Load local picker dates immediately at startup
             document.getElementById('lockScreen').classList.remove('hidden');
         };
+
+        // --- LOCAL STORAGE TIMELINE ENGINES (OPTION A) ---
+        function loadLocalTrackingDates() {
+            const savedUpdated = localStorage.getItem('ledger_date_updated') || "";
+            const savedSync = localStorage.getItem('ledger_date_banksync') || "";
+            document.getElementById('hdrUpdatedDate').value = savedUpdated;
+            document.getElementById('hdrBankSyncDate').value = savedSync;
+        }
+
+        function saveLocalTrackingDate(type, val) {
+            localStorage.setItem('ledger_date_' + type, val);
+        }
 
         function pressPin(num) { 
             if(currentPin.length < 6) { currentPin += num; document.getElementById('pinInput').value = "*".repeat(currentPin.length); } 
@@ -215,20 +253,20 @@
             } catch (e) { return "[Decryption Error]"; }
         }
 
-        // --- DASHBOARD BUILDER ---
+        // --- DASHBOARD AND AUTOMATIC SORT BUILDER ---
         async function loadDashboard() {
             const { data: txs } = await clientSupabase.from('checking_register').select('*');
             const { data: envs } = await clientSupabase.from('envelopes').select('*');
 
             let totalChecking = 0;
             let totalEnvelopes = 0;
+            decryptedRegisterCache = [];
+            decryptedEnvelopesCache = [];
 
-            // Render Interactive Register Section
             let txListHTML = "";
             for(let tx of txs || []) {
                 const p = await decryptData(tx.payee, encryptionKey);
-                const rawAmt = await decryptData(tx.amount, encryptionKey);
-                const a = parseFloat(rawAmt);
+                const a = parseFloat(await decryptData(tx.amount, encryptionKey));
                 const d = await decryptData(tx.date, encryptionKey);
                 const t = await decryptData(tx.type, encryptionKey);
                 const n = tx.notes ? await decryptData(tx.notes, encryptionKey) : "";
@@ -237,8 +275,8 @@
 
                 if(!isNaN(a)) {
                     totalChecking += trueSignedValue;
+                    decryptedRegisterCache.push({ date: d, payee: p, amount: trueSignedValue, notes: n });
                     
-                    // Escaped values packaged into arguments to safely invoke the edit screen on selection click
                     txListHTML += `<div onclick="openEditTxModal('${tx.id}', '${p.replace(/'/g, "\\'")}', ${trueSignedValue}, '${n.replace(/'/g, "\\'")}')" 
                         class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700 font-mono text-sm active:bg-gray-700 cursor-pointer transition select-none">
                         <div>
@@ -275,13 +313,14 @@
 
             let envListHTML = "";
             for(let env of processedEnvelopes) {
+                decryptedEnvelopesCache.push({ category: env.category, name: env.name, budget: env.monthly_budget, balance: env.current_amount });
                 envListHTML += `<div class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700 gap-2">
                     <div class="w-1/2 min-w-0">
                         <input type="text" value="${env.category}" 
                             onchange="updateEnvelopeField('${env.id}', 'category', this.value)"
                             class="bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none text-[10px] uppercase text-indigo-400 tracking-wider w-full font-semibold truncate">
                         <input type="text" value="${env.name}" 
-运行                            onchange="updateEnvelopeField('${env.id}', 'name', this.value)"
+                            onchange="updateEnvelopeField('${env.id}', 'name', this.value)"
                             class="bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none font-semibold text-white text-sm w-full truncate mt-0.5">
                     </div>
                     <div class="w-1/2 flex justify-end items-center space-x-2 font-mono">
@@ -324,9 +363,43 @@
             } catch(e) { alert("Failed to save changes: " + e.message); }
         }
 
-        // --- TRANSACTION MODAL INTERACTION ENGINES ---
+        // --- NATIVE FLAT-FILE CSV EXTRACTION ENGINES ---
+        function exportRegisterCSV() {
+            if(decryptedRegisterCache.length === 0) return alert("No transactions available to export.");
+            let csvContent = "Date,Payee,Amount,Notes\n";
+            for(let r of decryptedRegisterCache) {
+                let cleanPayee = r.payee.replace(/"/g, '""');
+                let cleanNotes = r.notes.replace(/"/g, '""');
+                csvContent += `"${r.date}","${cleanPayee}",${r.amount},"${cleanNotes}"\n`;
+            }
+            triggerFileDownload(csvContent, "register_export.csv");
+        }
+
+        ...运行function exportEnvelopesCSV() {
+            if(decryptedEnvelopesCache.length === 0) return alert("No envelope definitions to export.");
+            let csvContent = "Category,Envelope Name,Monthly Budget,Current Balance\n";
+            for(let e of decryptedEnvelopesCache) {
+                let cleanCat = e.category.replace(/"/g, '""');
+                let cleanName = e.name.replace(/"/g, '""');
+                csvContent += `"${cleanCat}","${cleanName}",${e.budget},${e.balance}\n`;
+            }
+            triggerFileDownload(csvContent, "envelopes_export.csv");
+        }
+
+        function triggerFileDownload(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function openTxModal() { 
-            document.getElementById('txId').value = ""; // Empty ID means New Entry mode
+            document.getElementById('txId').value = "";
             document.getElementById('modalTitle').innerText = "Log Transaction";
             document.getElementById('modalSubmitBtn').innerText = "Secure Post to Register";
             document.getElementById('modalSubmitBtn').className = "w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md";
@@ -339,7 +412,7 @@
         }
 
         function openEditTxModal(id, payee, amount, note) {
-            document.getElementById('txId').value = id; // Populating ID flips modal to Edit Mode
+            document.getElementById('txId').value = id;
             document.getElementById('modalTitle').innerText = "Edit Transaction Log";
             document.getElementById('modalSubmitBtn').innerText = "Apply Secure Changes";
             document.getElementById('modalSubmitBtn').className = "w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-md";
@@ -353,7 +426,6 @@
 
         function closeTxModal() { document.getElementById('txModal').classList.add('hidden'); }
 
-        // Core Insert & Update Post Master
         async function submitTransaction() {
             const id = document.getElementById('txId').value;
             const payee = document.getElementById('txPayee').value;
@@ -370,12 +442,10 @@
             const encNote = await encryptData(note, encryptionKey);
 
             if (id && id.trim() !== "") {
-                // RUN UPDATE LOGIC ON TARGET ROW
                 await clientSupabase.from('checking_register').update({
                     payee: encPayee, amount: encAmount, type: encType, notes: encNote
                 }).eq('id', id);
             } else {
-                // RUN NEW INSERT ENTRY LOGIC
                 const encDate = await encryptData(new Date().toLocaleDateString(), encryptionKey);
                 await clientSupabase.from('checking_register').insert([{ 
                     date: encDate, payee: encPayee, amount: encAmount, type: encType, notes: encNote 
@@ -390,7 +460,6 @@
             await loadDashboard();
         }
 
-        // Core Row Deleter Function
         async function deleteTransaction() {
             const id = document.getElementById('txId').value;
             if(!id) return;
@@ -398,9 +467,7 @@
             if(confirm("Are you sure you want to completely delete this transaction from your log?")) {
                 closeTxModal();
                 document.getElementById('syncStatus').innerText = "Deleting...";
-                
                 await clientSupabase.from('checking_register').delete().eq('id', id);
-                
                 document.getElementById('txId').value = "";
                 await loadDashboard();
             }
