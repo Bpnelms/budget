@@ -14,7 +14,7 @@
     <div class="fixed top-0 left-0 right-0 bg-gray-900 z-30 max-w-md mx-auto p-4 pb-2 space-y-4 border-b border-gray-800 shadow-md">
         <header class="bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-700 space-y-3">
             <div class="flex justify-between items-center">
-                <h1 class="text-xl font-bold tracking-tight">Regions Account 5119</h1>
+                <h1 class="text-xl font-bold tracking-tight">Secure Ledger</h1>
                 <span id="syncStatus" class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full font-mono">Synced</span>
             </div>
             
@@ -36,14 +36,14 @@
                 <div id="matchIndicator" class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-950 text-emerald-400">MATCH</div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-gray-700 text-left">
-                <div>
+            <div class="flex justify-between items-center pt-2 border-t border-gray-700 text-left">
+                <div class="w-[130px]">
                     <label class="block text-[9px] uppercase text-gray-400 tracking-wider font-semibold mb-0.5">Updated Date</label>
-                    <input type="date" id="hdrUpdatedDate" onchange="saveLocalTrackingDate('updated', this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-indigo-500 font-mono">
+                    <input type="date" id="hdrUpdatedDate" onchange="saveLocalTrackingDate('updated', this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-1.5 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-indigo-500 font-mono">
                 </div>
-                <div>
-                    <label class="block text-[9px] uppercase text-gray-400 tracking-wider font-semibold mb-0.5">Bank Sync Date</label>
-                    <input type="date" id="hdrBankSyncDate" onchange="saveLocalTrackingDate('banksync', this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-indigo-500 font-mono">
+                <div class="w-[135px] text-right">
+                    <label class="block text-[9px] uppercase text-gray-400 tracking-wider font-semibold mb-0.5 text-right">Bank Sync Date</label>
+                    <input type="date" id="hdrBankSyncDate" onchange="saveLocalTrackingDate('banksync', this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-1.5 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-indigo-500 font-mono text-right">
                 </div>
             </div>
         </header>
@@ -140,7 +140,7 @@
     <div id="lockScreen" class="fixed inset-0 bg-gray-950 flex flex-col justify-center items-center z-50 p-6">
         <div class="max-w-xs w-full text-center space-y-6">
             <h2 class="text-2xl font-bold">Enter Encryption PIN</h2>
-            <p class="text-xs text-gray-400">This PIN decrypts your logs locally. It is never sent to the database.</p>
+            <p class="text-xs text-gray-400">This PIN decrypts your logs locally. It is never sent to Supabase.</p>
             <input type="password" id="pinInput" readonly class="w-full text-center text-3xl font-mono tracking-widest bg-gray-900 border border-gray-700 rounded-xl py-3 text-white">
             <div class="grid grid-cols-3 gap-3">
                 <button onclick="pressPin('1')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">1</button>
@@ -312,14 +312,22 @@
             let envListHTML = "";
             for(let env of processedEnvelopes) {
                 decryptedEnvelopesCache.push({ category: env.category, name: env.name, budget: env.monthly_budget, balance: env.current_amount });
-                envListHTML += `<div class="bg-gray-800 p-3 rounded-xl flex justify-between items-center border border-gray-700 gap-2">
+                
+                // Real-time evaluation of debt status to apply conditional light-yellow warning banners
+                const isNegative = env.current_amount < 0;
+                const cardBgClass = isNegative ? 'bg-yellow-100 border-yellow-400 text-gray-900' : 'bg-gray-800 border-gray-700 text-gray-100';
+                const labelColorClass = isNegative ? 'text-amber-800' : 'text-indigo-400';
+                const subTextColorClass = isNegative ? 'text-gray-900' : 'text-white';
+                const numericInputBalClass = isNegative ? 'bg-white border-yellow-300 text-red-600 font-bold' : 'bg-gray-900 border-gray-700 text-emerald-400 font-semibold';
+
+                envListHTML += `<div class="${cardBgClass} p-3 rounded-xl flex justify-between items-center border gap-2">
                     <div class="w-1/2 min-w-0">
                         <input type="text" value="${env.category}" 
                             onchange="updateEnvelopeField('${env.id}', 'category', this.value)"
-                            class="bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none text-[10px] uppercase text-indigo-400 tracking-wider w-full font-semibold truncate">
+                            class="bg-transparent border-b border-transparent hover:border-gray-500 focus:border-indigo-500 focus:outline-none text-[10px] uppercase ${labelColorClass} tracking-wider w-full font-bold truncate">
                         <input type="text" value="${env.name}" 
                             onchange="updateEnvelopeField('${env.id}', 'name', this.value)"
-                            class="bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none font-semibold text-white text-sm w-full truncate mt-0.5">
+                            class="bg-transparent border-b border-transparent hover:border-gray-500 focus:border-indigo-500 focus:outline-none font-bold ${subTextColorClass} text-sm w-full truncate mt-0.5">
                     </div>
                     <div class="w-1/2 flex justify-end items-center space-x-2 font-mono">
                         <input type="number" step="0.01" value="${env.monthly_budget.toFixed(2)}" 
@@ -327,7 +335,7 @@
                             class="w-20 bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-right text-xs text-gray-400 focus:border-indigo-500 focus:outline-none">
                         <input type="number" step="0.01" value="${env.current_amount.toFixed(2)}" 
                             onchange="updateEnvelopeField('${env.id}', 'current_amount', this.value)"
-                            class="w-32 bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-right text-sm font-semibold text-emerald-400 focus:border-indigo-500 focus:outline-none">
+                            class="w-32 ${numericInputBalClass} border rounded-lg px-2 py-1 text-right text-sm focus:border-indigo-500 focus:outline-none">
                     </div>
                 </div>`;
             }
@@ -399,7 +407,7 @@
         function openTxModal() { 
             document.getElementById('txId').value = "";
             document.getElementById('modalTitle').innerText = "Log Transaction";
-            document.getElementById('modalSubmitBtn').innerText = "Post to Register";
+            document.getElementById('modalSubmitBtn').innerText = "Secure Post to Register";
             document.getElementById('modalSubmitBtn').className = "w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md";
             document.getElementById('modalDeleteBtn').classList.add('hidden');
             
@@ -412,7 +420,7 @@
         function openEditTxModal(id, payee, amount, note) {
             document.getElementById('txId').value = id;
             document.getElementById('modalTitle').innerText = "Edit Transaction Log";
-            document.getElementById('modalSubmitBtn').innerText = "Apply Changes";
+            document.getElementById('modalSubmitBtn').innerText = "Apply Secure Changes";
             document.getElementById('modalSubmitBtn').className = "w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-md";
             document.getElementById('modalDeleteBtn').classList.remove('hidden');
             
