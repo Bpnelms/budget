@@ -485,4 +485,43 @@
             const encPayee = await encryptData("Imported Baseline Balance", encryptionKey);
             const encAmount = await encryptData(checkingVal.toFixed(2), encryptionKey);
             const encType = await encryptData("credit", encryptionKey);
-            await clientSupabase.from('checking_register').insert(
+            await clientSupabase.from('checking_register').insert([{ date: encDate, payee: encPayee, amount: encAmount, type: encType }]);
+
+            const lines = rawPaste.trim().split('\n');
+            for(let line of lines) {
+                const cols = line.split('\t');
+                if(cols.length >= 4) {
+                    const encCat = await encryptData(cols[0].trim(), encryptionKey);
+                    const encName = await encryptData(cols[1].trim(), encryptionKey);
+                    const encBudget = await encryptData(parseFloat(cols[2]).toFixed(2), encryptionKey);
+                    const encCurrent = await encryptData(parseFloat(cols[3]).toFixed(2), encryptionKey);
+
+                    await clientSupabase.from('envelopes').insert([{
+                        category: encCat, name: encName, monthly_budget: encBudget, current_amount: encCurrent
+                    }]);
+                }
+            }
+            alert("Sheet records safely overwritten & sync complete!");
+            switchView('register');
+            await loadDashboard();
+        }
+
+        function switchView(view) {
+            document.getElementById('registerView').classList.toggle('hidden', view !== 'register');
+            document.getElementById('envelopesView').classList.toggle('hidden', view !== 'envelopes');
+            document.getElementById('toolsView').classList.toggle('hidden', view !== 'tools');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-md');
+                btn.classList.add('bg-gray-800', 'text-gray-300');
+            });
+            
+            const activeBtn = document.getElementById('btn-' + view);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-gray-800', 'text-gray-300');
+                activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-md');
+            }
+        }
+    </script>
+</body>
+</html>
