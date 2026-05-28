@@ -14,7 +14,7 @@
     <div class="fixed top-0 left-0 right-0 bg-gray-900 z-30 max-w-md mx-auto p-4 pb-2 space-y-4 border-b border-gray-800 shadow-md">
         <header class="bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-700 space-y-3">
             <div class="flex justify-between items-center">
-                <h1 class="text-xl font-bold tracking-tight">Secure Ledger</h1>
+                <h1 class="text-xl font-bold tracking-tight">Regions Account 5119</h1>
                 <span id="syncStatus" class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full font-mono">Synced</span>
             </div>
             
@@ -140,7 +140,7 @@
     <div id="lockScreen" class="fixed inset-0 bg-gray-950 flex flex-col justify-center items-center z-50 p-6">
         <div class="max-w-xs w-full text-center space-y-6">
             <h2 class="text-2xl font-bold">Enter Encryption PIN</h2>
-            <p class="text-xs text-gray-400">This PIN decrypts your logs locally. It is never sent to Supabase.</p>
+            <p class="text-xs text-gray-400">This PIN decrypts your logs locally. It is never sent to the database.</p>
             <input type="password" id="pinInput" readonly class="w-full text-center text-3xl font-mono tracking-widest bg-gray-900 border border-gray-700 rounded-xl py-3 text-white">
             <div class="grid grid-cols-3 gap-3">
                 <button onclick="pressPin('1')" class="bg-gray-800 text-2xl font-mono font-bold py-4 rounded-xl border border-gray-700 active:bg-gray-700 select-none">1</button>
@@ -399,7 +399,7 @@
         function openTxModal() { 
             document.getElementById('txId').value = "";
             document.getElementById('modalTitle').innerText = "Log Transaction";
-            document.getElementById('modalSubmitBtn').innerText = "Secure Post to Register";
+            document.getElementById('modalSubmitBtn').innerText = "Post to Register";
             document.getElementById('modalSubmitBtn').className = "w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md";
             document.getElementById('modalDeleteBtn').classList.add('hidden');
             
@@ -412,7 +412,7 @@
         function openEditTxModal(id, payee, amount, note) {
             document.getElementById('txId').value = id;
             document.getElementById('modalTitle').innerText = "Edit Transaction Log";
-            document.getElementById('modalSubmitBtn').innerText = "Apply Secure Changes";
+            document.getElementById('modalSubmitBtn').innerText = "Apply Changes";
             document.getElementById('modalSubmitBtn').className = "w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-md";
             document.getElementById('modalDeleteBtn').classList.remove('hidden');
             
