@@ -31,7 +31,7 @@
 
             <div class="flex justify-between items-center pt-2 border-t border-gray-700">
                 <div>
-                    <p class="text-[10px] text-gray-400">Envelopes Total: <span id="envelopesTotal" class="font-semibold font-mono text-gray-200">$0.00</span></p>
+                    <p class="text-xs text-gray-400">Envelopes Total: <span id="envelopesTotal" class="font-semibold font-mono text-gray-200">$0.00</span></p>
                 </div>
                 <div id="matchIndicator" class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-950 text-emerald-400">MATCH</div>
             </div>
@@ -169,7 +169,6 @@
         let currentPin = "";
         let globalCheckingCachedTotal = 0;
         
-        // Cache holding clean decrypted datasets for rapid CSV packaging
         let decryptedRegisterCache = [];
         let decryptedEnvelopesCache = [];
 
@@ -185,11 +184,10 @@
 
         window.onload = function() {
             initSupabase();
-            loadLocalTrackingDates(); // Load local picker dates immediately at startup
+            loadLocalTrackingDates();
             document.getElementById('lockScreen').classList.remove('hidden');
         };
 
-        // --- LOCAL STORAGE TIMELINE ENGINES (OPTION A) ---
         function loadLocalTrackingDates() {
             const savedUpdated = localStorage.getItem('ledger_date_updated') || "";
             const savedSync = localStorage.getItem('ledger_date_banksync') || "";
@@ -253,7 +251,7 @@
             } catch (e) { return "[Decryption Error]"; }
         }
 
-        // --- DASHBOARD AND AUTOMATIC SORT BUILDER ---
+        // --- DASHBOARD BUILDER ---
         async function loadDashboard() {
             const { data: txs } = await clientSupabase.from('checking_register').select('*');
             const { data: envs } = await clientSupabase.from('envelopes').select('*');
@@ -363,7 +361,7 @@
             } catch(e) { alert("Failed to save changes: " + e.message); }
         }
 
-        // --- NATIVE FLAT-FILE CSV EXTRACTION ENGINES ---
+        // --- CSV EXPORTS ---
         function exportRegisterCSV() {
             if(decryptedRegisterCache.length === 0) return alert("No transactions available to export.");
             let csvContent = "Date,Payee,Amount,Notes\n";
@@ -375,7 +373,7 @@
             triggerFileDownload(csvContent, "register_export.csv");
         }
 
-        ...运行function exportEnvelopesCSV() {
+        function exportEnvelopesCSV() {
             if(decryptedEnvelopesCache.length === 0) return alert("No envelope definitions to export.");
             let csvContent = "Category,Envelope Name,Monthly Budget,Current Balance\n";
             for(let e of decryptedEnvelopesCache) {
@@ -487,43 +485,4 @@
             const encPayee = await encryptData("Imported Baseline Balance", encryptionKey);
             const encAmount = await encryptData(checkingVal.toFixed(2), encryptionKey);
             const encType = await encryptData("credit", encryptionKey);
-            await clientSupabase.from('checking_register').insert([{ date: encDate, payee: encPayee, amount: encAmount, type: encType }]);
-
-            const lines = rawPaste.trim().split('\n');
-            for(let line of lines) {
-                const cols = line.split('\t');
-                if(cols.length >= 4) {
-                    const encCat = await encryptData(cols[0].trim(), encryptionKey);
-                    const encName = await encryptData(cols[1].trim(), encryptionKey);
-                    const encBudget = await encryptData(parseFloat(cols[2]).toFixed(2), encryptionKey);
-                    const encCurrent = await encryptData(parseFloat(cols[3]).toFixed(2), encryptionKey);
-
-                    await clientSupabase.from('envelopes').insert([{
-                        category: encCat, name: encName, monthly_budget: encBudget, current_amount: encCurrent
-                    }]);
-                }
-            }
-            alert("Sheet records safely overwritten & sync complete!");
-            switchView('register');
-            await loadDashboard();
-        }
-
-        function switchView(view) {
-            document.getElementById('registerView').classList.toggle('hidden', view !== 'register');
-            document.getElementById('envelopesView').classList.toggle('hidden', view !== 'envelopes');
-            document.getElementById('toolsView').classList.toggle('hidden', view !== 'tools');
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-md');
-                btn.classList.add('bg-gray-800', 'text-gray-300');
-            });
-            
-            const activeBtn = document.getElementById('btn-' + view);
-            if (activeBtn) {
-                activeBtn.classList.remove('bg-gray-800', 'text-gray-300');
-                activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-md');
-            }
-        }
-    </script>
-</body>
-</html>
+            await clientSupabase.from('checking_register').insert(
